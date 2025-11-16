@@ -1,6 +1,8 @@
 package com.roomreservation.authenticationservice.exception.handler;
 
+import com.roomreservation.authenticationservice.exception.ActivationTokenExpiredException;
 import com.roomreservation.authenticationservice.exception.EmailAlreadyExistsException;
+import com.roomreservation.authenticationservice.exception.InvalidActivationTokenException;
 import com.roomreservation.authenticationservice.exception.UsernameAlreadyExistsException;
 import com.roomreservation.authenticationservice.exception.response.ApiError;
 import org.springframework.http.HttpStatus;
@@ -45,6 +47,28 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Validation failed")
                 .debugMessage(joinedMessages)
+                .build();
+
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(InvalidActivationTokenException.class)
+    public ResponseEntity<ApiError> handleInvalidActivationToken(InvalidActivationTokenException ex) {
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Invalid activation token")
+                .debugMessage(ex.getMessage())
+                .build();
+
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(ActivationTokenExpiredException.class)
+    public ResponseEntity<ApiError> handleActivationTokenExpired(ActivationTokenExpiredException ex) {
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message("Activation token has expired")
+                .debugMessage(ex.getMessage())
                 .build();
 
         return buildResponseEntity(apiError);

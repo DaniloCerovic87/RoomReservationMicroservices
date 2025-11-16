@@ -3,19 +3,17 @@ package com.roomreservation.authenticationservice.dto;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Data;
 
-@Data
-public class InviteUserRequest {
+public record InviteUserRequest(
 
-    @NotBlank
-    @Email
-    private String email;
+        @NotBlank
+        @Email
+        String email,
 
-    @NotBlank
-    private String username;
+        @NotBlank
+        String username,
 
-    @NotNull
-    private Long employeeId;
+        @NotNull
+        Long employeeId
 
-}
+) {}

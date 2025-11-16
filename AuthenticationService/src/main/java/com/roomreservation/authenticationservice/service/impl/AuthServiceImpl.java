@@ -1,0 +1,77 @@
+package com.roomreservation.authenticationservice.service.impl;
+
+import com.roomreservation.authenticationservice.dto.CompleteRegistrationRequest;
+import com.roomreservation.authenticationservice.dto.InviteUserRequest;
+import com.roomreservation.authenticationservice.exception.ActivationTokenExpiredException;
+import com.roomreservation.authenticationservice.exception.InvalidActivationTokenException;
+import com.roomreservation.authenticationservice.model.User;
+import com.roomreservation.authenticationservice.model.enums.Role;
+import com.roomreservation.authenticationservice.model.enums.UserStatus;
+import com.roomreservation.authenticationservice.repository.UserRepository;
+import com.roomreservation.authenticationservice.service.AuthService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.security.SecureRandom;
+import java.time.LocalDateTime;
+import java.util.Base64;
+
+@Service
+@RequiredArgsConstructor
+public class AuthServiceImpl implements AuthService {
+
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    @Transactional
+    public void inviteUser(InviteUserRequest request) {
+        if (userRepository.existsByEmail(request.email())) {
+            throw new IllegalArgumentException("User with given email already exists");
+        }
+
+        if (userRepository.existsByUsername(request.username())) {
+            throw new IllegalArgumentException("User with given username already exists");
+        }
+
+        User user = new User();
+        user.setUsername(request.username());
+        user.setEmail(request.email());
+        user.setRole(Role.USER);
+        user.setStatus(UserStatus.PENDING_ACTIVATION);
+        user.setEmployeeId(request.employeeId());
+        user.setActivationToken(generateActivationToken());
+        user.setActivationExpiresAt(LocalDateTime.now().plusDays(2));
+
+        userRepository.save(user);
+    }
+
+    private String generateActivationToken() {
+        SecureRandom random = new SecureRandom();
+        byte[] bytes = new byte[32];
+        random.nextBytes(bytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+    }
+
+    @Transactional
+    public void completeRegistration(CompleteRegistrationRequest request) {
+        User user = userRepository.findByActivationToken(request.token())
+                .orElseThrow(() -> new InvalidActivationTokenException(request.token()));
+
+        if (user.getActivationExpiresAt() != null &&
+                user.getActivationExpiresAt().isBefore(LocalDateTime.now())) {
+            throw new ActivationTokenExpiredException(user.getActivationExpiresAt());
+        }
+
+        String encodedPassword = passwordEncoder.encode(request.password());
+        user.setPasswordHash(encodedPassword);
+
+        user.setStatus(UserStatus.ACTIVE);
+        user.setActivationToken(null);
+        user.setActivationExpiresAt(null);
+
+        userRepository.save(user);
+    }
+
+}
