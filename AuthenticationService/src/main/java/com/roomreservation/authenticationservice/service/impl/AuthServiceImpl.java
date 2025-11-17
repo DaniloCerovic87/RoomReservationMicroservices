@@ -4,9 +4,7 @@ import com.roomreservation.authenticationservice.dto.AuthResponse;
 import com.roomreservation.authenticationservice.dto.CompleteRegistrationRequest;
 import com.roomreservation.authenticationservice.dto.InviteUserRequest;
 import com.roomreservation.authenticationservice.dto.LoginRequest;
-import com.roomreservation.authenticationservice.exception.ActivationTokenExpiredException;
-import com.roomreservation.authenticationservice.exception.InvalidActivationTokenException;
-import com.roomreservation.authenticationservice.exception.InvalidCredentialsException;
+import com.roomreservation.authenticationservice.exception.*;
 import com.roomreservation.authenticationservice.model.User;
 import com.roomreservation.authenticationservice.model.enums.Role;
 import com.roomreservation.authenticationservice.model.enums.UserStatus;
@@ -33,11 +31,11 @@ public class AuthServiceImpl implements AuthService {
     @Transactional
     public void inviteUser(InviteUserRequest request) {
         if (userRepository.existsByEmail(request.email())) {
-            throw new IllegalArgumentException("User with given email already exists");
+            throw new EmailAlreadyExistsException(request.email());
         }
 
         if (userRepository.existsByUsername(request.username())) {
-            throw new IllegalArgumentException("User with given username already exists");
+            throw new UsernameAlreadyExistsException(request.username());
         }
 
         User user = new User();
