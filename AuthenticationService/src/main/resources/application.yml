@@ -16,5 +16,9 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
 
+jwt:
+  secret: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
+  expiration-minutes: 60
+
 server:
   port: 8081

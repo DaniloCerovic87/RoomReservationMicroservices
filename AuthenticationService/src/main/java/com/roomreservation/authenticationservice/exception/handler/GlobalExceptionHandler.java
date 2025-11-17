@@ -1,9 +1,6 @@
 package com.roomreservation.authenticationservice.exception.handler;
 
-import com.roomreservation.authenticationservice.exception.ActivationTokenExpiredException;
-import com.roomreservation.authenticationservice.exception.EmailAlreadyExistsException;
-import com.roomreservation.authenticationservice.exception.InvalidActivationTokenException;
-import com.roomreservation.authenticationservice.exception.UsernameAlreadyExistsException;
+import com.roomreservation.authenticationservice.exception.*;
 import com.roomreservation.authenticationservice.exception.response.ApiError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -80,6 +77,17 @@ public class GlobalExceptionHandler {
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Activation token has expired")
+                .debugMessage(ex.getMessage())
+                .build();
+
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ApiError> handleInvalidCredentials(InvalidCredentialsException ex) {
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message("Invalid username or password")
                 .debugMessage(ex.getMessage())
                 .build();
 

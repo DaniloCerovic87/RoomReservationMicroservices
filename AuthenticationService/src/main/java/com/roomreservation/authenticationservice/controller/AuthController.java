@@ -1,7 +1,9 @@
 package com.roomreservation.authenticationservice.controller;
 
+import com.roomreservation.authenticationservice.dto.AuthResponse;
 import com.roomreservation.authenticationservice.dto.CompleteRegistrationRequest;
 import com.roomreservation.authenticationservice.dto.InviteUserRequest;
+import com.roomreservation.authenticationservice.dto.LoginRequest;
 import com.roomreservation.authenticationservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,12 @@ public class AuthController {
     public ResponseEntity<Void> completeRegistration(@Valid @RequestBody CompleteRegistrationRequest request) {
         authService.completeRegistration(request);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = authService.login(request);
+        return ResponseEntity.ok(response);
     }
 
 }

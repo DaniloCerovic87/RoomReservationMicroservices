@@ -1,14 +1,18 @@
 package com.roomreservation.authenticationservice.service.impl;
 
+import com.roomreservation.authenticationservice.dto.AuthResponse;
 import com.roomreservation.authenticationservice.dto.CompleteRegistrationRequest;
 import com.roomreservation.authenticationservice.dto.InviteUserRequest;
+import com.roomreservation.authenticationservice.dto.LoginRequest;
 import com.roomreservation.authenticationservice.exception.ActivationTokenExpiredException;
 import com.roomreservation.authenticationservice.exception.InvalidActivationTokenException;
+import com.roomreservation.authenticationservice.exception.InvalidCredentialsException;
 import com.roomreservation.authenticationservice.model.User;
 import com.roomreservation.authenticationservice.model.enums.Role;
 import com.roomreservation.authenticationservice.model.enums.UserStatus;
 import com.roomreservation.authenticationservice.repository.UserRepository;
 import com.roomreservation.authenticationservice.service.AuthService;
+import com.roomreservation.authenticationservice.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,6 +28,7 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Transactional
     public void inviteUser(InviteUserRequest request) {
@@ -72,6 +77,30 @@ public class AuthServiceImpl implements AuthService {
         user.setActivationExpiresAt(null);
 
         userRepository.save(user);
+    }
+
+    @Transactional(readOnly = true)
+    public AuthResponse login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.username())
+                .orElseThrow(InvalidCredentialsException::new);
+
+        if (user.getStatus() != UserStatus.ACTIVE) {
+            throw new InvalidCredentialsException();
+        }
+
+        if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+            throw new InvalidCredentialsException();
+        }
+
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponse(
+                token,
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRole().name()
+        );
     }
 
 }
