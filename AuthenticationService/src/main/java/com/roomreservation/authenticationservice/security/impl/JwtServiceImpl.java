@@ -39,6 +39,7 @@ public class JwtServiceImpl implements JwtService {
                 .subject(String.valueOf(user.getEmployeeId()))
                 .issuedAt(Date.from(expiry))
                 .expiration(Date.from(expiry))
+                .add("role", user.getRole().name())
                 .and()
                 .signWith(getSigningKey(), Jwts.SIG.HS256)
                 .compact();
