@@ -2,6 +2,7 @@ package com.roomreservation.employeeservice.exception.handler;
 
 import com.roomreservation.employeeservice.exception.EmailAlreadyExistsException;
 import com.roomreservation.employeeservice.exception.PersonalIdAlreadyExistsException;
+import com.roomreservation.employeeservice.exception.ResourceNotFoundException;
 import com.roomreservation.employeeservice.exception.response.ApiError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class GlobalExceptionHandler {
 
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .message("User with given email already exists")
+                .message("Invalid request data")
                 .debugMessage(ex.getMessage())
                 .build();
 
@@ -33,7 +34,7 @@ public class GlobalExceptionHandler {
 
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .message("User with given username already exists")
+                .message("Invalid request data")
                 .debugMessage(ex.getMessage())
                 .build();
 
@@ -53,6 +54,17 @@ public class GlobalExceptionHandler {
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Validation failed")
                 .debugMessage(joinedMessages)
+                .build();
+
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException ex) {
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message("Resource not found")
+                .debugMessage(ex.getMessage())
                 .build();
 
         return buildResponseEntity(apiError);
