@@ -1,4 +1,4 @@
-package com.roomreservation.authenticationservice.service;
+package com.roomreservation.authenticationservice.security;
 
 import com.roomreservation.authenticationservice.model.User;
 

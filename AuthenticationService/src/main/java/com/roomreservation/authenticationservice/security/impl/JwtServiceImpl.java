@@ -1,7 +1,7 @@
-package com.roomreservation.authenticationservice.service.impl;
+package com.roomreservation.authenticationservice.security.impl;
 
 import com.roomreservation.authenticationservice.model.User;
-import com.roomreservation.authenticationservice.service.JwtService;
+import com.roomreservation.authenticationservice.security.JwtService;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;

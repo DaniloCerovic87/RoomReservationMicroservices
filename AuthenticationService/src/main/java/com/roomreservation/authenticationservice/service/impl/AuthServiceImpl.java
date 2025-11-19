@@ -10,7 +10,7 @@ import com.roomreservation.authenticationservice.model.enums.Role;
 import com.roomreservation.authenticationservice.model.enums.UserStatus;
 import com.roomreservation.authenticationservice.repository.UserRepository;
 import com.roomreservation.authenticationservice.service.AuthService;
-import com.roomreservation.authenticationservice.service.JwtService;
+import com.roomreservation.authenticationservice.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
