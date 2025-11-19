@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="001-create-employee-table" author="danilo.cerovic">
+        <sql>
+            CREATE TABLE employee
+            (
+                id          BIGSERIAL PRIMARY KEY,
+                first_name  VARCHAR(100) NOT NULL,
+                last_name   VARCHAR(100) NOT NULL,
+                personal_id VARCHAR(50)  NOT NULL UNIQUE,
+                email       VARCHAR(255) NOT NULL UNIQUE,
+                title       VARCHAR(100) NOT NULL,
+                department  VARCHAR(100) NOT NULL
+            );
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
