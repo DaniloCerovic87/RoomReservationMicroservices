@@ -14,6 +14,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -63,6 +65,14 @@ public class EmployeeServiceImpl implements EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
         return EmployeeResponse.fromEntity(employee);
+    }
+
+    @Transactional(readOnly = true)
+    public List<EmployeeResponse> getAllEmployees() {
+        return employeeRepository.findAll()
+                .stream()
+                .map(EmployeeResponse::fromEntity)
+                .toList();
     }
 
 }
