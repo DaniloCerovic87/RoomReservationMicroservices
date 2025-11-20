@@ -101,4 +101,17 @@ public class AuthServiceImpl implements AuthService {
         );
     }
 
+    @Transactional
+    @Override
+    public void disableUserByEmployeeId(Long employeeId) {
+        User user = userRepository.findByEmployeeId(employeeId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("User not found for employeeId = " + employeeId));
+
+        if (user.getStatus() != UserStatus.DISABLED) {
+            user.setStatus(UserStatus.DISABLED);
+            userRepository.save(user);
+        }
+    }
+
 }

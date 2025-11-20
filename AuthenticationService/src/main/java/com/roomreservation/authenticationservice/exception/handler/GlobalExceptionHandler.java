@@ -94,6 +94,17 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(apiError);
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException ex) {
+        ApiError apiError = ApiError.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .message("Resource not found")
+                .debugMessage(ex.getMessage())
+                .build();
+
+        return buildResponseEntity(apiError);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAllUnhandledExceptions(Exception ex) {
         log.error("Unexpected internal error:", ex);

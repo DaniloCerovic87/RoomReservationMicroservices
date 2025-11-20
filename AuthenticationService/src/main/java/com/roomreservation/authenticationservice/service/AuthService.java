@@ -14,4 +14,5 @@ public interface AuthService {
 
     AuthResponse login(LoginRequest request);
 
+    void disableUserByEmployeeId(Long employeeId);
 }

@@ -1,5 +1,6 @@
 package com.roomreservation.employeeservice.client;
 
+import com.roomreservation.employeeservice.dto.DisableUserRequest;
 import com.roomreservation.employeeservice.dto.InviteUserRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,4 +20,11 @@ public class AuthServiceClient {
                 .toBodilessEntity();
     }
 
+    public void disableUserByEmployeeId(Long employeeId) {
+        authRestClient.patch()
+                .uri("/api/auth/users/disable")
+                .body(new DisableUserRequest(employeeId))
+                .retrieve()
+                .toBodilessEntity();
+    }
 }

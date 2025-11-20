@@ -42,4 +42,8 @@ public class Employee {
     @NotBlank
     @Column(nullable = false)
     private String department;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
 }

@@ -75,4 +75,19 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .toList();
     }
 
+    @Transactional
+    public void deleteEmployee(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
+
+        if (employee.isDeleted()) {
+            throw new ResourceNotFoundException("Employee", id);
+        }
+
+        authServiceClient.disableUserByEmployeeId(employee.getId());
+
+        employee.setDeleted(true);
+        employeeRepository.save(employee);
+    }
+
 }
