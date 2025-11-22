@@ -1,6 +1,5 @@
 package com.roomreservation.employeeservice.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
 public record UpdateEmployeeRequest(
@@ -10,13 +9,6 @@ public record UpdateEmployeeRequest(
 
         @NotBlank
         String lastName,
-
-        @NotBlank
-        String personalId,
-
-        @NotBlank
-        @Email
-        String email,
 
         @NotBlank
         String title,

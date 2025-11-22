@@ -4,6 +4,7 @@ import com.roomreservation.employeeservice.client.AuthServiceClient;
 import com.roomreservation.employeeservice.dto.CreateEmployeeRequest;
 import com.roomreservation.employeeservice.dto.EmployeeResponse;
 import com.roomreservation.employeeservice.dto.InviteUserRequest;
+import com.roomreservation.employeeservice.dto.UpdateEmployeeRequest;
 import com.roomreservation.employeeservice.exception.EmailAlreadyExistsException;
 import com.roomreservation.employeeservice.exception.PersonalIdAlreadyExistsException;
 import com.roomreservation.employeeservice.exception.ResourceNotFoundException;
@@ -59,6 +60,27 @@ public class EmployeeServiceImpl implements EmployeeService {
     private String generateUsername(Employee employee) {
         return (employee.getFirstName() + "." + employee.getLastName()).toLowerCase();
     }
+
+    @Transactional
+    public EmployeeResponse updateEmployee(Long id, UpdateEmployeeRequest request) {
+
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
+
+        if (employee.isDeleted()) {
+            throw new ResourceNotFoundException("Employee", id);
+        }
+
+        employee.setFirstName(request.firstName());
+        employee.setLastName(request.lastName());
+        employee.setTitle(request.title());
+        employee.setDepartment(request.department());
+
+        employeeRepository.save(employee);
+
+        return EmployeeResponse.fromEntity(employee);
+    }
+
 
     @Transactional(readOnly = true)
     public EmployeeResponse getEmployee(Long id) {

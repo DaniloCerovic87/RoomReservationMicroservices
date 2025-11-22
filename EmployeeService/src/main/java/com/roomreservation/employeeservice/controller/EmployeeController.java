@@ -2,6 +2,7 @@ package com.roomreservation.employeeservice.controller;
 
 import com.roomreservation.employeeservice.dto.CreateEmployeeRequest;
 import com.roomreservation.employeeservice.dto.EmployeeResponse;
+import com.roomreservation.employeeservice.dto.UpdateEmployeeRequest;
 import com.roomreservation.employeeservice.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,15 @@ public class EmployeeController {
     @PostMapping
     public ResponseEntity<EmployeeResponse> createEmployee(@Valid @RequestBody CreateEmployeeRequest request) {
         EmployeeResponse response = employeeService.createEmployee(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<EmployeeResponse> updateEmployee(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateEmployeeRequest request
+    ) {
+        EmployeeResponse response = employeeService.updateEmployee(id, request);
         return ResponseEntity.ok(response);
     }
 
