@@ -1,4 +1,10 @@
+server:
+  port: 8081
+
 spring:
+  application:
+    name: AuthenticationService
+
   datasource:
     url: jdbc:postgresql://localhost:5432/auth_service
     username: auth_user
@@ -19,6 +25,3 @@ spring:
 jwt:
   secret: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
   expiration-minutes: 60
-
-server:
-  port: 8081

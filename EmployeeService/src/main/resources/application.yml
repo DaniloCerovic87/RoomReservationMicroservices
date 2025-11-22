@@ -1,4 +1,10 @@
+server:
+  port: 8082
+
 spring:
+  application:
+    name: EmployeeService
+
   datasource:
     url: jdbc:postgresql://localhost:5433/employee_service
     username: employee_user
@@ -22,5 +28,4 @@ jwt:
 auth:
   service-url: "http://localhost:8081"
 
-server:
-  port: 8082
+
