@@ -84,14 +84,14 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Transactional(readOnly = true)
     public EmployeeResponse getEmployee(Long id) {
-        Employee employee = employeeRepository.findById(id)
+        Employee employee = employeeRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
         return EmployeeResponse.fromEntity(employee);
     }
 
     @Transactional(readOnly = true)
     public List<EmployeeResponse> getAllEmployees() {
-        return employeeRepository.findAll()
+        return employeeRepository.findAllByDeletedFalse()
                 .stream()
                 .map(EmployeeResponse::fromEntity)
                 .toList();
@@ -99,17 +99,10 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Transactional
     public void deleteEmployee(Long id) {
-        Employee employee = employeeRepository.findById(id)
+        Employee employee = employeeRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
-
-        if (employee.isDeleted()) {
-            throw new ResourceNotFoundException("Employee", id);
-        }
-
         authServiceClient.disableUserByEmployeeId(employee.getId());
-
-        employee.setDeleted(true);
-        employeeRepository.save(employee);
+        employeeRepository.delete(employee);
     }
 
 }
