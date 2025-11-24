@@ -15,10 +15,10 @@
                 password_hash         VARCHAR(255),
                 status                VARCHAR(50)  NOT NULL,
                 role                  VARCHAR(50)  NOT NULL,
-                employee_id           BIGINT NOT NULL,
+                employee_id           BIGINT       NOT NULL,
                 activation_token      VARCHAR(255),
                 activation_expires_at TIMESTAMP,
-                created_at            TIMESTAMP NOT NULL
+                created_at            TIMESTAMP    NOT NULL
             );
         </sql>
     </changeSet>

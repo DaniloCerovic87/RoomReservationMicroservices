@@ -4,4 +4,5 @@ public record InviteUserRequest(
         String email,
         String username,
         Long employeeId
-) {}
+) {
+}

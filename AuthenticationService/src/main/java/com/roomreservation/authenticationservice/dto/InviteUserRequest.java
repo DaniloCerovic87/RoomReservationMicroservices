@@ -16,4 +16,5 @@ public record InviteUserRequest(
         @NotNull
         Long employeeId
 
-) {}
+) {
+}

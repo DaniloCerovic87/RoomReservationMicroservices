@@ -16,4 +16,5 @@ public record UpdateEmployeeRequest(
         @NotBlank
         String department
 
-) {}
+) {
+}
