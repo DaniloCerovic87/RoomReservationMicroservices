@@ -25,7 +25,10 @@ spring:
 jwt:
   secret: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
 
-auth:
-  service-url: "http://localhost:8081"
+auth-service:
+  url: "http://localhost:8081"
+  retry:
+    max-attempts: 3
+    initial-backoff-ms: 200
 
 

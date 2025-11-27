@@ -3,6 +3,8 @@ package com.roomreservation.employeeservice.exception.handler;
 import com.roomreservation.employeeservice.exception.EmailAlreadyExistsException;
 import com.roomreservation.employeeservice.exception.PersonalIdAlreadyExistsException;
 import com.roomreservation.employeeservice.exception.ResourceNotFoundException;
+import com.roomreservation.employeeservice.exception.client.AuthServiceException;
+import com.roomreservation.employeeservice.exception.client.AuthServiceUnavailableException;
 import com.roomreservation.employeeservice.exception.response.ApiError;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -64,6 +66,46 @@ public class GlobalExceptionHandler {
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.NOT_FOUND.value())
                 .message("Resource not found")
+                .debugMessage(ex.getMessage())
+                .build();
+
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(AuthServiceException.class)
+    public ResponseEntity<ApiError> handleAuthServiceException(AuthServiceException ex) {
+        HttpStatus backendStatus = ex.getBackendStatus();
+        HttpStatus clientStatus;
+        log.error("Error while calling AuthService: status={}, body={}",
+                backendStatus, ex.getBackendBody(), ex);
+
+        if (backendStatus.is4xxClientError()) {
+            clientStatus = HttpStatus.BAD_REQUEST;
+        } else if (backendStatus.is5xxServerError()) {
+            clientStatus = HttpStatus.BAD_GATEWAY;
+        } else {
+            clientStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+
+        ApiError apiError = ApiError.builder()
+                .status(clientStatus.value())
+                .message("Error while communicating with authentication service")
+                .debugMessage("AuthService status: %s, body: %s"
+                        .formatted(backendStatus, ex.getBackendBody()))
+                .build();
+
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(AuthServiceUnavailableException.class)
+    public ResponseEntity<ApiError> handleAuthServiceUnavailable(AuthServiceUnavailableException ex) {
+        log.error("AuthService unreachable: {}", ex.getMessage(), ex);
+
+        HttpStatus status = HttpStatus.SERVICE_UNAVAILABLE;
+
+        ApiError apiError = ApiError.builder()
+                .status(status.value())
+                .message("Authentication service is currently unavailable")
                 .debugMessage(ex.getMessage())
                 .build();
 

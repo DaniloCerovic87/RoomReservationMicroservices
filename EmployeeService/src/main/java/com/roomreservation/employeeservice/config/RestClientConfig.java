@@ -8,7 +8,7 @@ import org.springframework.web.client.RestClient;
 @Configuration
 public class RestClientConfig {
 
-    @Value("${auth.service-url}")
+    @Value("${auth-service.url}")
     private String authServiceUrl;
 
     @Bean
