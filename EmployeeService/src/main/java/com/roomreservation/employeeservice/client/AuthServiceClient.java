@@ -21,7 +21,7 @@ import java.util.function.Supplier;
 public class AuthServiceClient {
 
     @Value("${auth-service.retry.max-attempts}")
-    private int MAX_RETRIES;
+    private int MAX_ATTEMPTS;
 
     @Value("${auth-service.retry.initial-backoff-ms}")
     private int INITIAL_BACKOFF_MS;
@@ -50,13 +50,13 @@ public class AuthServiceClient {
     private <T> void executeAuthCall(Supplier<T> action) {
         long backoff = INITIAL_BACKOFF_MS;
 
-        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++, backoff *= 2) {
+        for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++, backoff *= 2) {
             try {
                 action.get();
             } catch (RestClientResponseException ex) {
                 log.warn("AuthService 5xx on attempt {}/{}. Retrying...",
-                        attempt, MAX_RETRIES, ex);
-                if (ex.getStatusCode().is5xxServerError() && attempt < MAX_RETRIES) {
+                        attempt, MAX_ATTEMPTS, ex);
+                if (ex.getStatusCode().is5xxServerError() && attempt < MAX_ATTEMPTS) {
                     sleep(backoff);
                     backoff *= 2;
                     continue;
@@ -70,8 +70,8 @@ public class AuthServiceClient {
                 );
             } catch (ResourceAccessException ex) {
                 log.warn("AuthService unreachable on attempt {}/{}. Retrying...",
-                        attempt, MAX_RETRIES, ex);
-                if (attempt < MAX_RETRIES) {
+                        attempt, MAX_ATTEMPTS, ex);
+                if (attempt < MAX_ATTEMPTS) {
                     sleep(backoff);
                     backoff *= 2;
                     continue;
