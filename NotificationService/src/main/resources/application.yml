@@ -1,0 +1,11 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: NotificationService
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: bc6f74d3cd56a6
+    password: 69de5e76382371
