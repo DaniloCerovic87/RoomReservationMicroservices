@@ -1,20 +1,22 @@
 package com.roomreservation.roomservice.model;
 
-import com.roomreservation.roomservice.model.enums.RoomType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
-@Data
-@AllArgsConstructor
+@Table(name = "room")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(
+        name = "room_type",
+        discriminatorType = DiscriminatorType.STRING
+)
+@Getter
+@Setter
 @NoArgsConstructor
-@Builder
-public class Room {
+@AllArgsConstructor
+public abstract class Room {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,13 +25,12 @@ public class Room {
     @NotBlank
     private String name;
 
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private RoomType roomType;
-
     @NotNull
     private Integer capacity;
 
-    private Integer numberOfComputers;
+    @Transient
+    public String getRoomType() {
+        return this.getClass().getAnnotation(DiscriminatorValue.class).value();
+    }
 
 }

@@ -19,7 +19,7 @@ public enum RoomType {
                 return type;
             }
         }
-        throw new ValidationException("Unknown room type: {0}", value);
+        throw new ValidationException(String.format("Unknown room type: %s", value));
     }
 
 }

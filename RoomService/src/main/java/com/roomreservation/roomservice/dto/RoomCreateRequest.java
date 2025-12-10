@@ -4,7 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record RoomRequest(
+public record RoomCreateRequest(
 
         @NotBlank(message = "Room name must not be blank")
         String name,
@@ -16,6 +16,11 @@ public record RoomRequest(
         @Positive(message = "Room capacity must be a positive number")
         Integer capacity,
 
-        Integer numberOfComputers
+        Integer numberOfComputers,
+
+        Integer numberOfProjectors,
+
+        Boolean hasSmartBoard
+
 ) {
 }

@@ -5,15 +5,17 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <changeSet id="001-create-employee-table" author="danilo.cerovic">
+    <changeSet id="001-create-room-table" author="danilo.cerovic">
         <sql>
             CREATE TABLE room
             (
-                id                  BIGSERIAL PRIMARY KEY,
-                name                VARCHAR(50) NOT NULL,
-                room_type           VARCHAR(50) NOT NULL,
-                capacity            INT         NOT NULL,
-                number_of_computers INT
+                id                   BIGSERIAL PRIMARY KEY,
+                name                 VARCHAR(50) NOT NULL,
+                room_type            VARCHAR(50) NOT NULL,
+                capacity             INT         NOT NULL,
+                number_of_computers  INT,
+                number_of_projectors INT,
+                has_smart_board      BOOLEAN
             );
         </sql>
     </changeSet>

@@ -1,7 +1,8 @@
 package com.roomreservation.roomservice.service;
 
-import com.roomreservation.roomservice.dto.RoomRequest;
+import com.roomreservation.roomservice.dto.RoomCreateRequest;
 import com.roomreservation.roomservice.dto.RoomResponse;
+import com.roomreservation.roomservice.dto.RoomUpdateRequest;
 
 import java.util.List;
 
@@ -11,9 +12,9 @@ public interface RoomService {
 
     RoomResponse getRoomById(Long id);
 
-    RoomResponse createRoom(RoomRequest request);
+    RoomResponse createRoom(RoomCreateRequest request);
 
-    RoomResponse updateRoom(Long id, RoomRequest request);
+    RoomResponse updateRoom(Long id, RoomUpdateRequest request);
 
     void deleteRoom(Long id);
 
