@@ -1,5 +1,6 @@
 package com.roomreservation.employeeservice.model;
 
+import com.roomreservation.employeeservice.enums.AcademicRank;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -22,30 +23,27 @@ public class Employee {
     private Long id;
 
     @NotBlank
-    @Column(nullable = false)
     private String firstName;
 
     @NotBlank
-    @Column(nullable = false)
     private String lastName;
 
     @NotBlank
-    @Column(nullable = false, unique = true)
     private String personalId;
 
     @NotBlank
-    @Column(nullable = false, unique = true)
     private String email;
 
     @NotBlank
-    @Column(nullable = false)
     private String title;
 
-    @NotBlank
-    @Column(nullable = false)
-    private String department;
+    @Enumerated(EnumType.STRING)
+    private AcademicRank academicRank;
 
-    @Column(nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "department_id")
+    private Department department;
+
     private boolean deleted = false;
 
 }

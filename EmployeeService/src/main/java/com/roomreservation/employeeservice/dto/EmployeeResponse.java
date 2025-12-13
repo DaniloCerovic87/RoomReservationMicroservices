@@ -9,7 +9,8 @@ public record EmployeeResponse(
         String personalId,
         String email,
         String title,
-        String department
+        String academicRank,
+        DepartmentResponse department
 ) {
     public static EmployeeResponse fromEntity(Employee employee) {
         return new EmployeeResponse(
@@ -19,7 +20,8 @@ public record EmployeeResponse(
                 employee.getPersonalId(),
                 employee.getEmail(),
                 employee.getTitle(),
-                employee.getDepartment()
+                employee.getAcademicRank().getValue(),
+                new DepartmentResponse(employee.getDepartment().getId(), employee.getDepartment().getName())
         );
     }
 }

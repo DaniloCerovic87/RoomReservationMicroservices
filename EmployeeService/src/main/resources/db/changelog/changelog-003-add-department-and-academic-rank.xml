@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="003-add-department-and-academic-rank" author="danilo.cerovic">
+        <sql>
+            CREATE TABLE department
+            (
+                id      BIGSERIAL PRIMARY KEY,
+                name    VARCHAR(100) NOT NULL UNIQUE,
+                deleted BOOLEAN      NOT NULL DEFAULT FALSE
+            );
+
+            ALTER TABLE employee
+                ADD COLUMN academic_rank VARCHAR(50) NOT NULL,
+                ADD COLUMN department_id BIGINT      NOT NULL;
+
+            ALTER TABLE employee
+                ADD CONSTRAINT fk_employee_department
+                    FOREIGN KEY (department_id) REFERENCES department (id);
+
+            ALTER TABLE employee
+            DROP COLUMN department;
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

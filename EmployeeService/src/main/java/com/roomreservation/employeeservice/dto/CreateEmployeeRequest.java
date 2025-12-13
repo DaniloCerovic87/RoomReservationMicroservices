@@ -2,6 +2,7 @@ package com.roomreservation.employeeservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public record CreateEmployeeRequest(
 
@@ -22,7 +23,9 @@ public record CreateEmployeeRequest(
         String title,
 
         @NotBlank
-        String department
+        String academicRank,
 
+        @NotNull
+        Long departmentId
 ) {
 }

@@ -3,6 +3,7 @@ package com.roomreservation.employeeservice.exception.handler;
 import com.roomreservation.employeeservice.exception.EmailAlreadyExistsException;
 import com.roomreservation.employeeservice.exception.PersonalIdAlreadyExistsException;
 import com.roomreservation.employeeservice.exception.ResourceNotFoundException;
+import com.roomreservation.employeeservice.exception.ValidationException;
 import com.roomreservation.employeeservice.exception.client.AuthServiceException;
 import com.roomreservation.employeeservice.exception.client.AuthServiceUnavailableException;
 import com.roomreservation.employeeservice.exception.response.ApiError;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
 @RestControllerAdvice
 @Slf4j
@@ -40,6 +43,17 @@ public class GlobalExceptionHandler {
                 .debugMessage(ex.getMessage())
                 .build();
 
+        return buildResponseEntity(apiError);
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiError> handleValidationException(ValidationException ex) {
+        log.warn("Malformed request:", ex);
+
+        ApiError apiError = ApiError.builder()
+                .status(BAD_REQUEST.value())
+                .message("Malformed request")
+                .debugMessage(ex.getMessage()).build();
         return buildResponseEntity(apiError);
     }
 

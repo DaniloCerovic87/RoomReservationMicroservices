@@ -7,4 +7,6 @@
 
     <include file="db/changelog/changelog-001-create-employee-table.xml"/>
     <include file="db/changelog/changelog-002-add-deleted-column-to-employee.xml"/>
+    <include file="db/changelog/changelog-003-add-department-and-academic-rank.xml"/>
+    <include file="db/changelog/changelog-004-insert-initial-departments.xml"/>
 </databaseChangeLog>

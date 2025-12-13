@@ -53,6 +53,7 @@ public class AuthServiceClient {
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++, backoff *= 2) {
             try {
                 action.get();
+                return;
             } catch (RestClientResponseException ex) {
                 log.warn("AuthService 5xx on attempt {}/{}. Retrying...",
                         attempt, MAX_ATTEMPTS, ex);
