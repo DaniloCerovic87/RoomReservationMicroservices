@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="002-migrate-reservation-to-multi-room" author="danilo.cerovic">
+        <sql>
+            ALTER TABLE reservation
+            DROP
+            COLUMN IF EXISTS room_id,
+                DROP
+            COLUMN IF EXISTS reservation_purpose,
+                DROP
+            COLUMN IF EXISTS subject,
+                DROP
+            COLUMN IF EXISTS semester,
+                DROP
+            COLUMN IF EXISTS class_type,
+                DROP
+            COLUMN IF EXISTS exam_type,
+                DROP
+            COLUMN IF EXISTS meeting_name,
+                DROP
+            COLUMN IF EXISTS meeting_description,
+                DROP
+            COLUMN IF EXISTS event_name,
+                DROP
+            COLUMN IF EXISTS event_description;
+
+            ALTER TABLE reservation
+                ADD COLUMN reservation_name VARCHAR(150) NOT NULL,
+                ADD COLUMN reservation_type VARCHAR(30) NOT NULL;
+
+            CREATE TABLE reservation_room
+            (
+                id             BIGSERIAL PRIMARY KEY,
+                reservation_id BIGINT NOT NULL,
+                room_id        BIGINT NOT NULL,
+
+                CONSTRAINT fk_reservation_room_reservation
+                    FOREIGN KEY (reservation_id) REFERENCES reservation (id),
+
+                CONSTRAINT uk_reservation_room
+                    UNIQUE (reservation_id, room_id)
+            );
+
+            DROP INDEX IF EXISTS idx_reservation_room_time;
+            DROP INDEX IF EXISTS idx_reservation_employee_id;
+
+            CREATE INDEX idx_reservation_employee_id ON reservation (employee_id);
+
+            CREATE INDEX idx_reservation_status ON reservation (reservation_status);
+            CREATE INDEX idx_reservation_time ON reservation (start_time, end_time);
+
+            CREATE INDEX idx_reservation_room_room_id ON reservation_room (room_id);
+            CREATE INDEX idx_reservation_room_reservation_id ON reservation_room (reservation_id);
+        </sql>
+    </changeSet>
+
+
+</databaseChangeLog>

@@ -2,23 +2,27 @@ package com.roomreservation.reservationservice.service.impl;
 
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
+import com.roomreservation.reservationservice.exception.ValidationException;
 import com.roomreservation.reservationservice.model.Reservation;
-import com.roomreservation.reservationservice.model.enums.ClassType;
-import com.roomreservation.reservationservice.model.enums.ExamType;
-import com.roomreservation.reservationservice.model.enums.ReservationPurpose;
+import com.roomreservation.reservationservice.model.ReservationRoom;
 import com.roomreservation.reservationservice.model.enums.ReservationStatus;
+import com.roomreservation.reservationservice.model.enums.ReservationType;
 import com.roomreservation.reservationservice.repository.ReservationRepository;
+import com.roomreservation.reservationservice.repository.ReservationRoomRepository;
 import com.roomreservation.reservationservice.service.ReservationService;
 import com.roomreservation.reservationservice.util.ReservationValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationRoomRepository reservationRoomRepository;
 
     @Override
     @Transactional
@@ -28,51 +32,38 @@ public class ReservationServiceImpl implements ReservationService {
 
         // TODO: REST calls to validate room and employee ids
 
+        boolean conflict = reservationRepository.existsOverlappingReservation(
+                request.roomIds(), request.startTime(), request.endTime()
+        );
+
+        if (conflict) {
+            throw new ValidationException("One or more chosen rooms are already reserved in the requested time slot");
+        }
+
         Reservation reservation = new Reservation();
         reservation.setEmployeeId(request.employeeId());
-        reservation.setRoomId(request.roomId());
+        reservation.setReservationName(request.reservationName());
+        reservation.setReservationType(ReservationType.fromValue(request.reservationType()));
         reservation.setStartTime(request.startTime());
         reservation.setEndTime(request.endTime());
-        reservation.setReservationPurpose(ReservationPurpose.fromValue(request.reservationPurpose()));
         reservation.setReservationStatus(ReservationStatus.PENDING);
+        Reservation saved = reservationRepository.save(reservation);
 
-        applyPurposeSpecificFields(reservation, request);
+        List<ReservationRoom> links = request.roomIds().stream()
+                .distinct()
+                .map(roomId -> {
+                    ReservationRoom rr = new ReservationRoom();
+                    rr.setReservationId(saved.getId());
+                    rr.setRoomId(roomId);
+                    return rr;
+                })
+                .toList();
 
-        reservationRepository.save(reservation);
+        reservationRoomRepository.saveAll(links);
 
         // TODO: emit event za CalendarService
 
         return ReservationResponse.toResponse(reservation);
     }
 
-    private void applyPurposeSpecificFields(Reservation reservation, ReservationRequest request) {
-        ReservationPurpose purpose = reservation.getReservationPurpose();
-
-        switch (purpose) {
-            case CLASS -> {
-                ReservationValidator.validateClassReservation(request);
-                reservation.setSubject(request.subject());
-                reservation.setSemester(request.semester());
-                reservation.setClassType(ClassType.fromValue(request.classType()));
-
-            }
-            case EXAM -> {
-                ReservationValidator.validateExamReservation(request);
-                reservation.setSubject(request.subject());
-                reservation.setSemester(request.semester());
-                reservation.setExamType(ExamType.fromValue(request.examType()));
-
-            }
-            case MEETING -> {
-                ReservationValidator.validateMeetingReservation(request);
-                reservation.setMeetingName(request.meetingName());
-                reservation.setMeetingDescription(request.meetingDescription());
-            }
-            case EVENT -> {
-                ReservationValidator.validateEventReservation(request);
-                reservation.setEventName(request.eventName());
-                reservation.setEventDescription(request.eventDescription());
-            }
-        }
-    }
 }

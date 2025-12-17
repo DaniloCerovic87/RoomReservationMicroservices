@@ -1,11 +1,8 @@
 package com.roomreservation.reservationservice.model;
 
-import com.roomreservation.reservationservice.model.enums.ClassType;
-import com.roomreservation.reservationservice.model.enums.ExamType;
-import com.roomreservation.reservationservice.model.enums.ReservationPurpose;
 import com.roomreservation.reservationservice.model.enums.ReservationStatus;
+import com.roomreservation.reservationservice.model.enums.ReservationType;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
@@ -24,40 +21,25 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
+    @Column(nullable = false)
     private Long employeeId;
 
-    @NotNull
-    private Long roomId;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 30)
+    private ReservationType reservationType;
 
-    @NotNull
+    @Column(nullable = false)
     private LocalDateTime startTime;
 
-    @NotNull
+    @Column(nullable = false)
     private LocalDateTime endTime;
 
     @Enumerated(EnumType.STRING)
-    @NotNull
+    @Column(nullable = false, length = 20)
     private ReservationStatus reservationStatus;
 
-    @Enumerated(EnumType.STRING)
-    @NotNull
-    private ReservationPurpose reservationPurpose;
-
-    private String subject;
-    private Integer semester;
-
-    @Enumerated(EnumType.STRING)
-    private ClassType classType;
-
-    @Enumerated(EnumType.STRING)
-    private ExamType examType;
-
-    private String meetingName;
-    private String meetingDescription;
-
-    private String eventName;
-    private String eventDescription;
+    @Column(nullable = false, length = 150)
+    private String reservationName;
 
     @CreatedDate
     private LocalDateTime createdAt;
