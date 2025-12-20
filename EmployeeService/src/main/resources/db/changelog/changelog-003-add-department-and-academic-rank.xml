@@ -23,7 +23,8 @@
                     FOREIGN KEY (department_id) REFERENCES department (id);
 
             ALTER TABLE employee
-            DROP COLUMN department;
+            DROP
+            COLUMN department;
         </sql>
     </changeSet>
 

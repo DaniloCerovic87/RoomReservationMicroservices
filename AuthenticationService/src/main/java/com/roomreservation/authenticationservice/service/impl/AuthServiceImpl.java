@@ -60,7 +60,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getActivationToken(),
                 user.getActivationExpiresAt()
         );
-        
+
         kafkaTemplate.send("user-invited", String.valueOf(user.getId()), event)
                 .whenComplete((res, ex) -> {
                     if (ex != null) {

@@ -78,7 +78,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             throw new ResourceNotFoundException("Employee", id);
         }
 
-        if(request.departmentId() != null) {
+        if (request.departmentId() != null) {
             Department department = departmentRepository.findByIdAndDeletedFalse(request.departmentId())
                     .orElseThrow(() -> new ResourceNotFoundException("Department", request.departmentId()));
             employee.setDepartment(department);

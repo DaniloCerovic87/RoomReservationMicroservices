@@ -20,31 +20,29 @@ import java.util.function.Supplier;
 @Slf4j
 public class AuthServiceClient {
 
+    private final RestClient authRestClient;
     @Value("${auth-service.retry.max-attempts}")
     private int MAX_ATTEMPTS;
-
     @Value("${auth-service.retry.initial-backoff-ms}")
     private int INITIAL_BACKOFF_MS;
 
-    private final RestClient authRestClient;
-
     public void inviteUser(InviteUserRequest request) {
         executeAuthCall(() ->
-        authRestClient.post()
-                .uri("/api/auth/invite")
-                .body(request)
-                .retrieve()
-                .toBodilessEntity()
+                authRestClient.post()
+                        .uri("/api/auth/invite")
+                        .body(request)
+                        .retrieve()
+                        .toBodilessEntity()
         );
     }
 
     public void disableUserByEmployeeId(Long employeeId) {
         executeAuthCall(() ->
                 authRestClient.patch()
-                .uri("/api/auth/users/disable")
-                .body(new DisableUserRequest(employeeId))
-                .retrieve()
-                .toBodilessEntity());
+                        .uri("/api/auth/users/disable")
+                        .body(new DisableUserRequest(employeeId))
+                        .retrieve()
+                        .toBodilessEntity());
     }
 
     private <T> void executeAuthCall(Supplier<T> action) {

@@ -7,4 +7,5 @@ public record RoomUpdateRequest(
         Integer numberOfComputers,
         Integer numberOfProjectors,
         Boolean hasSmartBoard
-) {}
+) {
+}

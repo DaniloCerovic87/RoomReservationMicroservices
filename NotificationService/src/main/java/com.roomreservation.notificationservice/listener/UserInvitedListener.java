@@ -14,7 +14,8 @@ public class UserInvitedListener {
 
     private final EmailService mailService;
 
-    @KafkaListener(topics = "${app.kafka.topics.user-invited:user-invited}", groupId = "${spring.kafka.consumer.group-id:notification-service}")
+    @KafkaListener(topics = "${app.kafka.topics.userInvited:user-invited}",
+            groupId = "${spring.kafka.consumer.group-id:notification-service}")
     public void onUserInvited(UserInvitedEvent event) {
         log.info("Received user.invited event: userId={}, email={}", event.userId(), event.email());
         mailService.sendActivationEmail(event);

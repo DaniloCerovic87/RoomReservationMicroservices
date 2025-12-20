@@ -8,4 +8,5 @@ public record UserInvitedEvent(
         String firstName,
         String activationToken,
         LocalDateTime expiresAt
-) {}
+) {
+}

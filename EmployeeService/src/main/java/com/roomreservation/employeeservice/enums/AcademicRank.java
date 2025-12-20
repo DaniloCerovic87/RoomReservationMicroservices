@@ -7,10 +7,10 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum AcademicRank {
-    ASSISTANT ("Assistant"),
-    DOCENT ("Docent"),
-    ASSOCIATE_PROFESSOR ("Associate Professor"),
-    FULL_PROFESSOR ("Full Professor");
+    ASSISTANT("Assistant"),
+    DOCENT("Docent"),
+    ASSOCIATE_PROFESSOR("Associate Professor"),
+    FULL_PROFESSOR("Full Professor");
 
     private final String value;
 
