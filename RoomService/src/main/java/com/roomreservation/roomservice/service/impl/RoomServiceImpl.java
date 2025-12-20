@@ -28,14 +28,14 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public List<RoomResponse> getAllRooms() {
-        return roomRepository.findAll().stream()
+        return roomRepository.findAllByDeletedFalse().stream()
                 .map(RoomResponse::fromEntity)
                 .toList();
     }
 
     @Override
     public RoomResponse getRoomById(Long id) {
-        Room room = roomRepository.findById(id)
+        Room room = roomRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room", id));
         return RoomResponse.fromEntity(room);
     }
@@ -80,7 +80,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     @Transactional
     public RoomResponse updateRoom(Long id, RoomUpdateRequest request) {
-        Room room = roomRepository.findById(id)
+        Room room = roomRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room", id));
 
         RoomValidator.validateUpdate(room, request);
@@ -122,13 +122,12 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public void deleteRoom(Long id) {
-        if (!roomRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Room", id);
-        }
+        Room room = roomRepository.findByIdAndDeletedFalse(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Room", id));
 
         // TODO send request to reservation service to check if there is a reservation
 
-        roomRepository.deleteById(id);
+        roomRepository.delete(room);
     }
 
 }

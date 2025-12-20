@@ -5,6 +5,11 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <include file="db/changelog/changelog-001-create-room-table.xml"/>
-    <include file="db/changelog/changelog-002-add-deleted-column-to-room.xml"/>
+    <changeSet id="002-add-deleted-column-to-room" author="danilo.cerovic">
+        <sql>
+            ALTER TABLE room
+                ADD COLUMN deleted BOOLEAN NOT NULL DEFAULT FALSE;
+        </sql>
+    </changeSet>
+
 </databaseChangeLog>

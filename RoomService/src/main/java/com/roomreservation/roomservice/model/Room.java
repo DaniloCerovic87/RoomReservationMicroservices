@@ -31,6 +31,8 @@ public abstract class Room {
     @NotNull
     private Integer capacity;
 
+    private boolean deleted = false;
+
     @Transient
     public String getRoomType() {
         return this.getClass().getAnnotation(DiscriminatorValue.class).value();
