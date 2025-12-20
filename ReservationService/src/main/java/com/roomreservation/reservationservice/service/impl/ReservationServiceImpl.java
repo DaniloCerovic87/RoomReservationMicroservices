@@ -1,5 +1,6 @@
 package com.roomreservation.reservationservice.service.impl;
 
+import com.roomreservation.reservationservice.client.EmployeeGrpcClient;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
 import com.roomreservation.reservationservice.exception.ValidationException;
@@ -21,6 +22,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
 
+    private final EmployeeGrpcClient employeeGrpcClient;
     private final ReservationRepository reservationRepository;
     private final ReservationRoomRepository reservationRoomRepository;
 
@@ -30,7 +32,11 @@ public class ReservationServiceImpl implements ReservationService {
 
         ReservationValidator.validateReservationDuration(request);
 
-        // TODO: REST calls to validate room and employee ids
+        if (!employeeGrpcClient.existsEmployee(request.employeeId())) {
+            throw new ValidationException("Employee does not exist: " + request.employeeId());
+        }
+
+        // TODO: gRPC call to validate room ids
 
         boolean conflict = reservationRepository.existsOverlappingReservation(
                 request.roomIds(), request.startTime(), request.endTime()

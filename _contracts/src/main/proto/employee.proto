@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package employee;
+
+option java_multiple_files = true;
+option java_package = "com.roomreservation.contracts.employee.grpc";
+
+service EmployeeGrpcService {
+  rpc ExistsEmployee(ExistsEmployeeRequest) returns (ExistsEmployeeResponse);
+}
+
+message ExistsEmployeeRequest {
+  int64 employeeId = 1;
+}
+
+message ExistsEmployeeResponse {
+  bool exists = 1;
+}

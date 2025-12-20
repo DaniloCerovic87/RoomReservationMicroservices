@@ -126,4 +126,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         employeeRepository.delete(employee);
     }
 
+    @Override
+    public boolean existsActiveEmployee(Long id) {
+        return employeeRepository.existsByIdAndDeletedFalse(id);
+    }
+
 }
