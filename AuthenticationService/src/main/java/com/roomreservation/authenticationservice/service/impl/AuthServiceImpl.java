@@ -4,6 +4,7 @@ import com.roomreservation.authenticationservice.dto.AuthResponse;
 import com.roomreservation.authenticationservice.dto.CompleteRegistrationRequest;
 import com.roomreservation.authenticationservice.dto.InviteUserRequest;
 import com.roomreservation.authenticationservice.dto.LoginRequest;
+import com.roomreservation.authenticationservice.event.UserInvitedEvent;
 import com.roomreservation.authenticationservice.exception.*;
 import com.roomreservation.authenticationservice.model.User;
 import com.roomreservation.authenticationservice.model.enums.Role;
@@ -12,6 +13,8 @@ import com.roomreservation.authenticationservice.repository.UserRepository;
 import com.roomreservation.authenticationservice.security.JwtService;
 import com.roomreservation.authenticationservice.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,11 +25,13 @@ import java.util.Base64;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final KafkaTemplate<String, UserInvitedEvent> kafkaTemplate;
 
     @Transactional
     public void inviteUser(InviteUserRequest request) {
@@ -46,8 +51,27 @@ public class AuthServiceImpl implements AuthService {
         user.setEmployeeId(request.employeeId());
         user.setActivationToken(generateActivationToken());
         user.setActivationExpiresAt(LocalDateTime.now().plusDays(2));
-
         userRepository.save(user);
+
+        UserInvitedEvent event = new UserInvitedEvent(
+                user.getId(),
+                user.getEmail(),
+                user.getUsername(),
+                user.getActivationToken(),
+                user.getActivationExpiresAt()
+        );
+        
+        kafkaTemplate.send("user-invited", String.valueOf(user.getId()), event)
+                .whenComplete((res, ex) -> {
+                    if (ex != null) {
+                        log.error("Failed to publish user.invited for userId={}", user.getId(), ex);
+                    } else {
+                        log.info("Published user.invited for userId={} partition={} offset={}",
+                                user.getId(),
+                                res.getRecordMetadata().partition(),
+                                res.getRecordMetadata().offset());
+                    }
+                });
     }
 
     private String generateActivationToken() {

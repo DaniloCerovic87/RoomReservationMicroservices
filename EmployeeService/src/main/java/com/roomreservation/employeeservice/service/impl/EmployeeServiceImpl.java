@@ -64,7 +64,6 @@ public class EmployeeServiceImpl implements EmployeeService {
         return EmployeeResponse.fromEntity(employee);
     }
 
-
     private String generateUsername(Employee employee) {
         return (employee.getFirstName() + "." + employee.getLastName()).toLowerCase();
     }
