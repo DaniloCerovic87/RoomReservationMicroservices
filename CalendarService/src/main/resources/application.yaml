@@ -1,0 +1,10 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: CalendarService
+  data:
+    mongodb:
+      uri: mongodb://root:password@localhost:27017/calendar_mongodb?authSource=admin
+      auto-index-creation: false
