@@ -1,5 +1,6 @@
 package com.roomreservation.roomservice.service;
 
+import com.roomreservation.contracts.room.grpc.RoomSummary;
 import com.roomreservation.roomservice.dto.RoomCreateRequest;
 import com.roomreservation.roomservice.dto.RoomResponse;
 import com.roomreservation.roomservice.dto.RoomUpdateRequest;
@@ -18,6 +19,6 @@ public interface RoomService {
 
     void deleteRoom(Long id);
 
-    boolean existsAllRooms(List<Long> ids);
+    List<RoomSummary> getRoomSummaries(List<Long> roomIds);
 
 }

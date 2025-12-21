@@ -1,7 +1,8 @@
 package com.roomreservation.reservationservice.client;
 
-import com.roomreservation.contracts.room.grpc.ExistsAllRoomsRequest;
+import com.roomreservation.contracts.room.grpc.GetRoomSummariesRequest;
 import com.roomreservation.contracts.room.grpc.RoomGrpcServiceGrpc;
+import com.roomreservation.contracts.room.grpc.RoomSummary;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 
@@ -13,11 +14,11 @@ public class RoomGrpcClient {
     @GrpcClient("roomService")
     private RoomGrpcServiceGrpc.RoomGrpcServiceBlockingStub stub;
 
-    public boolean existsAllRooms(List<Long> ids) {
-        var req = ExistsAllRoomsRequest.newBuilder()
+    public List<RoomSummary> getRoomSummaries(List<Long> ids) {
+        var req = GetRoomSummariesRequest.newBuilder()
                 .addAllRoomIds(ids)
                 .build();
 
-        return stub.existsAllRooms(req).getExists();
+        return stub.getRoomSummaries(req).getRoomsList();
     }
 }

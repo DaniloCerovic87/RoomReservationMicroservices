@@ -1,7 +1,8 @@
 package com.roomreservation.reservationservice.client;
 
 import com.roomreservation.contracts.employee.grpc.EmployeeGrpcServiceGrpc;
-import com.roomreservation.contracts.employee.grpc.ExistsEmployeeRequest;
+import com.roomreservation.contracts.employee.grpc.GetEmployeeSummaryRequest;
+import com.roomreservation.contracts.employee.grpc.GetEmployeeSummaryResponse;
 import net.devh.boot.grpc.client.inject.GrpcClient;
 import org.springframework.stereotype.Component;
 
@@ -11,11 +12,11 @@ public class EmployeeGrpcClient {
     @GrpcClient("employeeService")
     private EmployeeGrpcServiceGrpc.EmployeeGrpcServiceBlockingStub stub;
 
-    public boolean existsEmployee(Long employeeId) {
-        var req = ExistsEmployeeRequest.newBuilder()
+    public GetEmployeeSummaryResponse getEmployeeSummary(Long employeeId) {
+        var req = GetEmployeeSummaryRequest.newBuilder()
                 .setEmployeeId(employeeId)
                 .build();
 
-        return stub.existsEmployee(req).getExists();
+        return stub.getEmployeeSummary(req);
     }
 }

@@ -6,13 +6,18 @@ option java_multiple_files = true;
 option java_package = "com.roomreservation.contracts.room.grpc";
 
 service RoomGrpcService {
-  rpc ExistsAllRooms(ExistsAllRoomsRequest) returns (ExistsAllRoomsResponse);
+  rpc GetRoomSummaries(GetRoomSummariesRequest) returns (GetRoomSummariesResponse);
 }
 
-message ExistsAllRoomsRequest {
+message GetRoomSummariesRequest {
   repeated int64 roomIds = 1;
 }
 
-message ExistsAllRoomsResponse {
-  bool exists = 1;
+message RoomSummary {
+  int64 roomId = 1;
+  string name = 2;
+}
+
+message GetRoomSummariesResponse {
+  repeated RoomSummary rooms = 1;
 }

@@ -1,6 +1,7 @@
 package com.roomreservation.roomservice.service.impl;
 
 
+import com.roomreservation.contracts.room.grpc.RoomSummary;
 import com.roomreservation.roomservice.client.ReservationGrpcClient;
 import com.roomreservation.roomservice.dto.RoomCreateRequest;
 import com.roomreservation.roomservice.dto.RoomResponse;
@@ -134,9 +135,11 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public boolean existsAllRooms(List<Long> ids) {
-        List<Long> existing = roomRepository.findExistingIds(ids);
-        return ids.size() == existing.size();
+    public List<RoomSummary> getRoomSummaries(List<Long> roomIds) {
+        List<Room> rooms = roomRepository.findByIdInAndDeletedFalse(roomIds);
+        return rooms.stream().map(r -> RoomSummary.newBuilder().setRoomId(r.getId())
+                .setName(r.getName())
+                .build()).toList();
     }
 
 }

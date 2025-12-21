@@ -1,5 +1,7 @@
 package com.roomreservation.reservationservice.service.impl;
 
+import com.roomreservation.contracts.employee.grpc.GetEmployeeSummaryResponse;
+import com.roomreservation.contracts.room.grpc.RoomSummary;
 import com.roomreservation.reservationservice.client.EmployeeGrpcClient;
 import com.roomreservation.reservationservice.client.RoomGrpcClient;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
@@ -32,14 +34,17 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationResponse createReservation(ReservationRequest request) {
 
-        ReservationValidator.validateForCreate(request);
+//        ReservationValidator.validateForCreate(request);
 
-        if (!employeeGrpcClient.existsEmployee(request.employeeId())) {
+        GetEmployeeSummaryResponse empResp = employeeGrpcClient.getEmployeeSummary(request.employeeId());
+        if (!empResp.getExists()) {
             throw new ValidationException("Employee does not exist: " + request.employeeId());
         }
 
-        if (!roomGrpcClient.existsAllRooms(request.roomIds())) {
-            throw new ValidationException("One or more rooms do not exist");
+        List<RoomSummary> roomSummaries = roomGrpcClient.getRoomSummaries(request.roomIds());
+
+        if (request.roomIds().size() != roomSummaries.size()) {
+            throw new ValidationException("One or more rooms do not exist or are deleted");
         }
 
         boolean conflict = reservationRepository.existsOverlappingReservation(

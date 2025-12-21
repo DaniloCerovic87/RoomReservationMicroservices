@@ -18,6 +18,4 @@ public interface EmployeeService {
 
     void deleteEmployee(Long id);
 
-    boolean existsActiveEmployee(Long id);
-
 }
