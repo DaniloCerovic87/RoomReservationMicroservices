@@ -32,7 +32,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public ReservationResponse createReservation(ReservationRequest request) {
 
-        ReservationValidator.validateReservationDuration(request);
+        ReservationValidator.validateForCreate(request);
 
         if (!employeeGrpcClient.existsEmployee(request.employeeId())) {
             throw new ValidationException("Employee does not exist: " + request.employeeId());
