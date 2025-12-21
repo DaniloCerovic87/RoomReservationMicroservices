@@ -1,6 +1,7 @@
 package com.roomreservation.roomservice.service.impl;
 
 
+import com.roomreservation.roomservice.client.ReservationGrpcClient;
 import com.roomreservation.roomservice.dto.RoomCreateRequest;
 import com.roomreservation.roomservice.dto.RoomResponse;
 import com.roomreservation.roomservice.dto.RoomUpdateRequest;
@@ -24,6 +25,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
 
+    private final ReservationGrpcClient reservationGrpcClient;
     private final RoomRepository roomRepository;
 
     @Override
@@ -119,13 +121,14 @@ public class RoomServiceImpl implements RoomService {
         return RoomResponse.fromEntity(updated);
     }
 
-
     @Override
     public void deleteRoom(Long id) {
         Room room = roomRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Room", id));
 
-        // TODO send request to reservation service to check if there is a reservation
+        if (reservationGrpcClient.hasActiveReservationsForRoom(id)) {
+            throw new ValidationException("Room can't be deleted because it has active reservations.");
+        }
 
         roomRepository.delete(room);
     }

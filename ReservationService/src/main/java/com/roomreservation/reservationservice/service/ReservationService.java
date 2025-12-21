@@ -7,4 +7,6 @@ public interface ReservationService {
 
     ReservationResponse createReservation(ReservationRequest request);
 
+    boolean hasActiveReservationForRoom(Long roomId);
+
 }

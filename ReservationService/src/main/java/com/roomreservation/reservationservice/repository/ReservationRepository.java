@@ -26,4 +26,17 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             @Param("startTime") LocalDateTime startTime,
             @Param("endTime") LocalDateTime endTime
     );
+
+    @Query(value = """
+                SELECT EXISTS (
+                  SELECT 1
+                  FROM reservation r
+                  JOIN reservation_room rr ON rr.reservation_id = r.id
+                  WHERE rr.room_id = :roomId
+                    AND r.reservation_status IN ('PENDING','APPROVED')
+                    AND r.end_time > CURRENT_TIMESTAMP
+                )
+            """, nativeQuery = true)
+    boolean existsActiveReservationForRoom(@Param("roomId") Long roomId);
+
 }

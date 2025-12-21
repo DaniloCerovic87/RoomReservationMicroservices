@@ -2,6 +2,8 @@ server:
   port: 8080
 
 grpc:
+  server:
+    port: 7073
   client:
     employeeService:
       address: static://localhost:7071

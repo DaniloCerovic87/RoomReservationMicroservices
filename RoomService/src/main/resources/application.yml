@@ -4,6 +4,10 @@ server:
 grpc:
   server:
     port: 7072
+  client:
+    reservationService:
+      address: static://localhost:7073
+      negotiationType: plaintext
 
 spring:
   application:

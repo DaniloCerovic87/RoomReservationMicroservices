@@ -76,4 +76,9 @@ public class ReservationServiceImpl implements ReservationService {
         return ReservationResponse.toResponse(reservation);
     }
 
+    @Override
+    public boolean hasActiveReservationForRoom(Long roomId) {
+        return reservationRepository.existsActiveReservationForRoom(roomId);
+    }
+
 }
