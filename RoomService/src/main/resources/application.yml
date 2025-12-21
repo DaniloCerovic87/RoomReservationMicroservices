@@ -1,6 +1,10 @@
 server:
   port: 8083
 
+grpc:
+  server:
+    port: 7072
+
 spring:
   application:
     name: RoomService

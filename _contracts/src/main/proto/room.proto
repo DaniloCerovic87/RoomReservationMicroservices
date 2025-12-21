@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package room;
+
+option java_multiple_files = true;
+option java_package = "com.roomreservation.contracts.room.grpc";
+
+service RoomGrpcService {
+  rpc ExistsAllRooms(ExistsAllRoomsRequest) returns (ExistsAllRoomsResponse);
+}
+
+message ExistsAllRoomsRequest {
+  repeated int64 roomIds = 1;
+}
+
+message ExistsAllRoomsResponse {
+  bool exists = 1;
+}

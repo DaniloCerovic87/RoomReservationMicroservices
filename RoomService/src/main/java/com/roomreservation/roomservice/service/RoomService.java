@@ -18,4 +18,6 @@ public interface RoomService {
 
     void deleteRoom(Long id);
 
+    boolean existsAllRooms(List<Long> ids);
+
 }

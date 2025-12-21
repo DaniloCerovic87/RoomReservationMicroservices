@@ -130,4 +130,10 @@ public class RoomServiceImpl implements RoomService {
         roomRepository.delete(room);
     }
 
+    @Override
+    public boolean existsAllRooms(List<Long> ids) {
+        List<Long> existing = roomRepository.findExistingIds(ids);
+        return ids.size() == existing.size();
+    }
+
 }

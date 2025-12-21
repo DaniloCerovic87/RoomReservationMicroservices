@@ -4,7 +4,10 @@ server:
 grpc:
   client:
     employeeService:
-      address: static://localhost:9091
+      address: static://localhost:7071
+      negotiationType: plaintext
+    roomService:
+      address: static://localhost:7072
       negotiationType: plaintext
 
 spring:

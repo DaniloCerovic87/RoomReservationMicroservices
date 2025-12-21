@@ -1,6 +1,7 @@
 package com.roomreservation.reservationservice.service.impl;
 
 import com.roomreservation.reservationservice.client.EmployeeGrpcClient;
+import com.roomreservation.reservationservice.client.RoomGrpcClient;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
 import com.roomreservation.reservationservice.exception.ValidationException;
@@ -23,6 +24,7 @@ import java.util.List;
 public class ReservationServiceImpl implements ReservationService {
 
     private final EmployeeGrpcClient employeeGrpcClient;
+    private final RoomGrpcClient roomGrpcClient;
     private final ReservationRepository reservationRepository;
     private final ReservationRoomRepository reservationRoomRepository;
 
@@ -36,7 +38,9 @@ public class ReservationServiceImpl implements ReservationService {
             throw new ValidationException("Employee does not exist: " + request.employeeId());
         }
 
-        // TODO: gRPC call to validate room ids
+        if (!roomGrpcClient.existsAllRooms(request.roomIds())) {
+            throw new ValidationException("One or more rooms do not exist");
+        }
 
         boolean conflict = reservationRepository.existsOverlappingReservation(
                 request.roomIds(), request.startTime(), request.endTime()
