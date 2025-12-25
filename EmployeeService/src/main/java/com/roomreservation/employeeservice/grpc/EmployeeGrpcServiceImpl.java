@@ -5,7 +5,6 @@ import com.roomreservation.contracts.employee.grpc.GetEmployeeSummaryRequest;
 import com.roomreservation.contracts.employee.grpc.GetEmployeeSummaryResponse;
 import com.roomreservation.employeeservice.dto.EmployeeResponse;
 import com.roomreservation.employeeservice.exception.ResourceNotFoundException;
-import com.roomreservation.employeeservice.model.Employee;
 import com.roomreservation.employeeservice.service.EmployeeService;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;

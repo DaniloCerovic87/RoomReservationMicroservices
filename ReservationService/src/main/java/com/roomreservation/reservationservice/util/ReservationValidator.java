@@ -26,7 +26,8 @@ public class ReservationValidator {
     private static void validateDistinctRoomIds(ReservationRequest request) {
         Set<Long> unique = new HashSet<>(request.roomIds());
         if (unique.size() != request.roomIds().size()) {
-            throw new ValidationException("You can't select the same room more than once.");        }
+            throw new ValidationException("You can't select the same room more than once.");
+        }
     }
 
 }
