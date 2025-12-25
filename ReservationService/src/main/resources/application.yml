@@ -33,6 +33,14 @@ spring:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.xml
 
+  kafka:
+    bootstrap-servers: localhost:9092
+    template:
+      default-topic: reservation-created
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
 jwt:
   secret: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
 
