@@ -1,5 +1,6 @@
 package com.roomreservation.employeeservice.config;
 
+import com.roomreservation.employeeservice.interceptor.AuthTokenPropagationInterceptor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,9 +13,10 @@ public class RestClientConfig {
     private String authServiceUrl;
 
     @Bean
-    public RestClient authRestClient(RestClient.Builder builder) {
-        return builder
-                .baseUrl(authServiceUrl)
+    public RestClient authRestClient(RestClient.Builder builder,
+                                     AuthTokenPropagationInterceptor interceptor) {
+        return builder.baseUrl(authServiceUrl)
+                .requestInterceptor(interceptor)
                 .build();
     }
 
