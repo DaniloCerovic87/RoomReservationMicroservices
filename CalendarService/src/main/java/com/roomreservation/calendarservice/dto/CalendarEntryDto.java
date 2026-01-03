@@ -2,7 +2,7 @@ package com.roomreservation.calendarservice.dto;
 
 import java.time.LocalDateTime;
 
-public record ReservedRoomDto(
+public record CalendarEntryDto(
         Long roomId,
         String roomName,
         Long reservationId,

@@ -1,6 +1,6 @@
 package com.roomreservation.calendarservice.service.impl;
 
-import com.roomreservation.calendarservice.dto.ReservedRoomDto;
+import com.roomreservation.calendarservice.dto.CalendarEntryDto;
 import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
 import com.roomreservation.calendarservice.model.CalendarEntry;
 import com.roomreservation.calendarservice.model.EmployeeSummary;
@@ -56,13 +56,13 @@ public class CalendarEntryServiceImpl implements CalendarEntryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ReservedRoomDto> getReservedRoomsForDay(LocalDate date) {
+    public List<CalendarEntryDto> getDayReservations(LocalDate date) {
         LocalDateTime dayStart = date.atStartOfDay();
         LocalDateTime dayEnd = date.plusDays(1).atStartOfDay();
 
         return repo.findByStartTimeLessThanAndEndTimeGreaterThan(dayEnd, dayStart)
                 .stream()
-                .map(e -> new ReservedRoomDto(
+                .map(e -> new CalendarEntryDto(
                         e.getRoom().getId(),
                         e.getRoom().getName(),
                         e.getReservationId(),

@@ -1,6 +1,6 @@
 package com.roomreservation.calendarservice.service;
 
-import com.roomreservation.calendarservice.dto.ReservedRoomDto;
+import com.roomreservation.calendarservice.dto.CalendarEntryDto;
 import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
 
 import java.time.LocalDate;
@@ -10,6 +10,6 @@ public interface CalendarEntryService {
 
     void applyReservationCreated(ReservationCreatedEvent event);
 
-    List<ReservedRoomDto> getReservedRoomsForDay(LocalDate date);
+    List<CalendarEntryDto> getDayReservations(LocalDate date);
 }
 

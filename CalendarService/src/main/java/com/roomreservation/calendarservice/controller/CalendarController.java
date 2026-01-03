@@ -1,6 +1,6 @@
 package com.roomreservation.calendarservice.controller;
 
-import com.roomreservation.calendarservice.dto.ReservedRoomDto;
+import com.roomreservation.calendarservice.dto.CalendarEntryDto;
 import com.roomreservation.calendarservice.service.CalendarEntryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -19,8 +19,8 @@ public class CalendarController {
 
     private final CalendarEntryService calendarEntryService;
 
-    @GetMapping("/reserved")
-    public List<ReservedRoomDto> reservedForDay(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        return calendarEntryService.getReservedRoomsForDay(date);
+    @GetMapping("/day")
+    public List<CalendarEntryDto> getDayReservations(@RequestParam("date") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        return calendarEntryService.getDayReservations(date);
     }
 }
