@@ -25,32 +25,34 @@ public class CalendarEntryServiceImpl implements CalendarEntryService {
     @Transactional
     public void applyReservationCreated(ReservationCreatedEvent event) {
         for (var room : event.rooms()) {
-            String entryKey = buildEntryKey(event.reservationId(), room.roomId());
+            for (int i = 0; i < 3; i++) {
+                String entryKey = buildEntryId(event.reservationId(), room.roomId());
 
-            CalendarEntry entry = new CalendarEntry();
-            entry.setEntryKey(entryKey);
-            entry.setReservationId(event.reservationId());
+                CalendarEntry entry = new CalendarEntry();
+                entry.setId(entryKey);
+                entry.setReservationId(event.reservationId());
 
-            entry.setEmployee(EmployeeSummary.builder()
-                    .id(event.employee().employeeId())
-                    .fullName(event.employee().fullName())
-                    .build());
+                entry.setEmployee(EmployeeSummary.builder()
+                        .id(event.employee().employeeId())
+                        .fullName(event.employee().fullName())
+                        .build());
 
-            entry.setRoom(RoomSummary.builder()
-                    .id(room.roomId())
-                    .name(room.name())
-                    .build());
+                entry.setRoom(RoomSummary.builder()
+                        .id(room.roomId())
+                        .name(room.name())
+                        .build());
 
-            entry.setReservationName(event.reservationName());
-            entry.setReservationType(event.reservationType());
-            entry.setStatus(event.status());
+                entry.setReservationName(event.reservationName());
+                entry.setReservationType(event.reservationType());
+                entry.setStatus(event.status());
 
-            entry.setStartTime(event.startTime());
-            entry.setEndTime(event.endTime());
+                entry.setStartTime(event.startTime());
+                entry.setEndTime(event.endTime());
 
-            entry.setOccurredAt(event.occurredAt());
+                entry.setOccurredAt(event.occurredAt());
 
-            repo.save(entry);
+                repo.save(entry);
+            }
         }
     }
 
@@ -77,7 +79,7 @@ public class CalendarEntryServiceImpl implements CalendarEntryService {
                 .toList();
     }
 
-    private String buildEntryKey(long reservationId, long roomId) {
+    private String buildEntryId(long reservationId, long roomId) {
         return "res-%d_room-%d".formatted(reservationId, roomId);
     }
 }

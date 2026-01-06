@@ -17,10 +17,7 @@ import java.time.LocalDateTime;
 public class CalendarEntry {
 
     @Id
-    private ObjectId id;
-
-    @Indexed(unique = true)
-    private String entryKey;
+    private String id;
 
     private Long reservationId;
 
