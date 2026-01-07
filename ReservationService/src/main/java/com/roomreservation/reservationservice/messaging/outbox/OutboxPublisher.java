@@ -1,9 +1,14 @@
 package com.roomreservation.reservationservice.messaging.outbox;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent;
 import com.roomreservation.reservationservice.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.errors.AuthorizationException;
+import org.apache.kafka.common.errors.InvalidTopicException;
+import org.apache.kafka.common.errors.RecordTooLargeException;
+import org.apache.kafka.common.errors.SerializationException;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -11,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Component
@@ -22,7 +28,7 @@ public class OutboxPublisher {
     private final KafkaTemplate<String, ReservationCreatedEvent> kafkaTemplate;
 
     private static final int BATCH_SIZE = 20;
-    private static final int MAX_RETRIES = 10;
+    private static final int MAX_RETRIES = 30;
 
     @Scheduled(fixedDelay = 1000)
     @Transactional
@@ -38,7 +44,7 @@ public class OutboxPublisher {
 
                 var sendResult = kafkaTemplate
                         .send(e.getTopic(), e.getEventKey(), evt)
-                        .get();
+                        .get(3, TimeUnit.SECONDS);
 
                 e.setStatus(OutboxStatus.SENT);
                 e.setSentAt(LocalDateTime.now());
@@ -51,15 +57,47 @@ public class OutboxPublisher {
                         sendResult.getRecordMetadata().offset());
 
             } catch (Exception ex) {
-                e.setRetryCount(e.getRetryCount() + 1);
+                e.setLastError(shorten(rootCauseNameAndMessage(ex)));
                 e.setStatus(OutboxStatus.FAILED);
-                e.setLastError(shorten(ex.getMessage()));
 
-                log.error("Outbox FAILED id={} retries={} err={}",
-                        e.getId(), e.getRetryCount(), e.getLastError(), ex);
+                if (isPermanent(ex)) {
+                    e.setRetryCount(MAX_RETRIES);
+                    log.error("Outbox DEAD id={} err={}", e.getId(), e.getLastError(), ex);
+                } else {
+                    e.setRetryCount(e.getRetryCount() + 1);
+                    if (e.getRetryCount() % 10 == 0) {
+                        log.error("Outbox FAILED id={} retries={} err={}", e.getId(), e.getRetryCount(), e.getLastError(), ex);
+                    } else {
+                        log.warn("Outbox FAILED id={} retries={} err={}", e.getId(), e.getRetryCount(), e.getLastError());
+                    }
+                }
             }
         }
         outboxRepo.saveAll(batch);
+    }
+
+    private static boolean isPermanent(Throwable ex) {
+        Throwable t = ex;
+        while (t != null) {
+            if (t instanceof JsonProcessingException) return true;
+            if (t instanceof SerializationException) return true;
+            if (t instanceof AuthorizationException) return true;
+            if (t instanceof InvalidTopicException) return true;
+            if (t instanceof RecordTooLargeException) return true;
+            t = t.getCause();
+        }
+        return false;
+    }
+
+    private String rootCauseNameAndMessage(Throwable ex) {
+        Throwable t = ex;
+        int guard = 0;
+        while (t.getCause() != null && t.getCause() != t && guard++ < 20) {
+            t = t.getCause();
+        }
+        String out = t.getClass().getSimpleName() + ": " + String.valueOf(t.getMessage());
+        log.warn("LAST_ERROR_TO_STORE = [{}]", out);
+        return shorten(t.getClass().getSimpleName() + ": " + String.valueOf(t.getMessage()));
     }
 
     private static String shorten(String s) {

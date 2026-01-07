@@ -12,7 +12,7 @@ public interface OutboxEventRepository extends JpaRepository<OutboxEvent, Long> 
     @Query(value = """
         SELECT *
         FROM outbox_event
-        WHERE status = 'NEW'
+        WHERE status IN ('NEW','FAILED')
           AND retry_count < :maxRetries
         ORDER BY created_at
         FOR UPDATE SKIP LOCKED
