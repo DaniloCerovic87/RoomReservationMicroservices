@@ -9,4 +9,7 @@ public interface ReservationService {
 
     boolean hasActiveReservationForRoom(Long roomId);
 
+    void approveReservation(Long id);
+
+    void declineReservation(Long id);
 }

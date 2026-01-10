@@ -23,4 +23,12 @@ public enum ReservationStatus {
         throw new ValidationException("Unknown reservation status: {0}", value);
     }
 
+    public boolean canTransitionTo(ReservationStatus target) {
+        return switch (this) {
+            case PENDING -> target == APPROVED || target == DECLINED || target == CANCELLED;
+            case APPROVED -> target == CANCELLED;
+            case DECLINED, CANCELLED -> false;
+        };
+    }
+
 }

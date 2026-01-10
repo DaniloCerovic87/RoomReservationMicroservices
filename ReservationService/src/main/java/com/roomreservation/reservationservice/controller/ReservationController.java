@@ -7,10 +7,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -23,6 +20,18 @@ public class ReservationController {
     public ResponseEntity<ReservationResponse> createReservation(@Valid @RequestBody ReservationRequest request) {
         ReservationResponse createdReservation = reservationService.createReservation(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdReservation);
+    }
+
+    @PatchMapping("/{id}/approve")
+    public ResponseEntity<Void> approve(@PathVariable Long id) {
+        reservationService.approveReservation(id);
+        return ResponseEntity.ok().build();
+    }
+
+    @PatchMapping("/{id}/decline")
+    public ResponseEntity<Void> decline(@PathVariable Long id) {
+        reservationService.declineReservation(id);
+        return ResponseEntity.ok().build();
     }
 
 }

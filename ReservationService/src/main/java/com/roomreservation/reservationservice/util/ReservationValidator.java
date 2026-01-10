@@ -2,6 +2,7 @@ package com.roomreservation.reservationservice.util;
 
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.exception.ValidationException;
+import com.roomreservation.reservationservice.model.enums.ReservationStatus;
 import lombok.experimental.UtilityClass;
 
 import java.time.Duration;
@@ -27,6 +28,12 @@ public class ReservationValidator {
         Set<Long> unique = new HashSet<>(request.roomIds());
         if (unique.size() != request.roomIds().size()) {
             throw new ValidationException("You can't select the same room more than once.");
+        }
+    }
+
+    public static void validateTransition(ReservationStatus current, ReservationStatus target) {
+        if (!current.canTransitionTo(target)) {
+            throw new ValidationException("Invalid status transition: " + current + " -> " + target);
         }
     }
 

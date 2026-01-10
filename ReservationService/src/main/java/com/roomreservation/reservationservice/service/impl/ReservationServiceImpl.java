@@ -6,10 +6,11 @@ import com.roomreservation.reservationservice.client.EmployeeGrpcClient;
 import com.roomreservation.reservationservice.client.RoomGrpcClient;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
-import com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent;
+import com.roomreservation.reservationservice.exception.ResourceNotFoundException;
 import com.roomreservation.reservationservice.exception.ValidationException;
-import com.roomreservation.reservationservice.messaging.outbox.OutboxPayloadMapper;
+import com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent;
 import com.roomreservation.reservationservice.messaging.outbox.OutboxEvent;
+import com.roomreservation.reservationservice.messaging.outbox.OutboxPayloadMapper;
 import com.roomreservation.reservationservice.messaging.outbox.OutboxStatus;
 import com.roomreservation.reservationservice.model.Reservation;
 import com.roomreservation.reservationservice.model.ReservationRoom;
@@ -109,8 +110,34 @@ public class ReservationServiceImpl implements ReservationService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public boolean hasActiveReservationForRoom(Long roomId) {
         return reservationRepository.existsActiveReservationForRoom(roomId);
     }
 
+    @Override
+    @Transactional
+    public void approveReservation(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+        changeStatus(reservation, ReservationStatus.APPROVED);
+        //TODO send event to Kafka for CalendarService
+        reservationRepository.save(reservation);
+    }
+
+    @Override
+    @Transactional
+    public void declineReservation(Long id) {
+        Reservation reservation = reservationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+        changeStatus(reservation, ReservationStatus.DECLINED);
+        //TODO send event to Kafka for CalendarService
+        reservationRepository.save(reservation);
+    }
+
+    private void changeStatus(Reservation reservation, ReservationStatus target) {
+        ReservationStatus current = reservation.getReservationStatus();
+        ReservationValidator.validateTransition(current, target);
+        reservation.setReservationStatus(target);
+    }
 }
