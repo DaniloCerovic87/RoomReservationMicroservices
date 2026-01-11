@@ -17,9 +17,6 @@ public class OutboxEventEnqueuer {
                                         String eventType,
                                         String topic,
                                         Object payload) {
-
-        LocalDateTime now = LocalDateTime.now();
-
         OutboxEvent out = new OutboxEvent();
         out.setAggregateType("Reservation");
         out.setAggregateId(reservationId);
@@ -30,7 +27,7 @@ public class OutboxEventEnqueuer {
         out.setStatus(OutboxStatus.NEW);
         out.setRetryCount(0);
         out.setLastError(null);
-        out.setCreatedAt(now);
+        out.setCreatedAt(LocalDateTime.now());
         out.setSentAt(null);
 
         out.setPayload(outboxPayloadMapper.toJson(payload));

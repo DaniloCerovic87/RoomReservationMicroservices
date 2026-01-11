@@ -32,7 +32,8 @@ public class JwtGrpcServerInterceptor implements ServerInterceptor {
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             call.close(Status.UNAUTHENTICATED.withDescription("Missing Authorization"), new Metadata());
-            return new ServerCall.Listener<>() {};
+            return new ServerCall.Listener<>() {
+            };
         }
 
         String token = authHeader.substring(7);
@@ -41,7 +42,8 @@ public class JwtGrpcServerInterceptor implements ServerInterceptor {
             JwtUserPrincipal principal = jwtTokenProvider.getPrincipalFromToken(token);
             if (principal == null || principal.role() == null) {
                 call.close(Status.UNAUTHENTICATED.withDescription("Invalid token"), new Metadata());
-                return new ServerCall.Listener<>() {};
+                return new ServerCall.Listener<>() {
+                };
             }
 
             var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + principal.role()));
@@ -51,11 +53,14 @@ public class JwtGrpcServerInterceptor implements ServerInterceptor {
             return new ForwardingServerCallListener.SimpleForwardingServerCallListener<>(
                     next.startCall(call, headers)
             ) {
-                @Override public void onComplete() {
+                @Override
+                public void onComplete() {
                     SecurityContextHolder.clearContext();
                     super.onComplete();
                 }
-                @Override public void onCancel() {
+
+                @Override
+                public void onCancel() {
                     SecurityContextHolder.clearContext();
                     super.onCancel();
                 }
@@ -64,7 +69,8 @@ public class JwtGrpcServerInterceptor implements ServerInterceptor {
         } catch (Exception e) {
             SecurityContextHolder.clearContext();
             call.close(Status.UNAUTHENTICATED.withDescription("Token validation failed"), new Metadata());
-            return new ServerCall.Listener<>() {};
+            return new ServerCall.Listener<>() {
+            };
         }
     }
 }

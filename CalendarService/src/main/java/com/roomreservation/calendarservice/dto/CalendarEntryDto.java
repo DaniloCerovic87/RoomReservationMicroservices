@@ -13,4 +13,5 @@ public record CalendarEntryDto(
         String status,
         LocalDateTime startTime,
         LocalDateTime endTime
-) {}
+) {
+}

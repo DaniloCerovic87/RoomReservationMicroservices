@@ -6,4 +6,5 @@ public record ReservationStatusChangedEvent(
         Long reservationId,
         String newStatus,
         LocalDateTime occurredAt
-) {}
+) {
+}
