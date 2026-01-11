@@ -19,8 +19,8 @@ public class ReservationValidator {
 
     private static void validateReservationDuration(ReservationRequest request) {
         long durationInMinutes = Duration.between(request.startTime(), request.endTime()).toMinutes();
-        if (durationInMinutes < 5) {
-            throw new ValidationException("Reservation must be at least 5 minutes long");
+        if (durationInMinutes < 15) {
+            throw new ValidationException("Reservation must be at least 15 minutes long");
         }
     }
 

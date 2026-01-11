@@ -149,7 +149,7 @@ public class ReservationServiceImpl implements ReservationService {
     private void enqueueStatusChangedEvent(Long reservationId, ReservationStatus newStatus) {
         ReservationStatusChangedEvent evt = new ReservationStatusChangedEvent(
                 reservationId,
-                newStatus.name(),
+                newStatus.getValue(),
                 LocalDateTime.now()
         );
 
