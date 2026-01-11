@@ -2,6 +2,7 @@ package com.roomreservation.calendarservice.service.impl;
 
 import com.roomreservation.calendarservice.dto.CalendarEntryDto;
 import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
+import com.roomreservation.calendarservice.event.ReservationStatusChangedEvent;
 import com.roomreservation.calendarservice.model.CalendarEntry;
 import com.roomreservation.calendarservice.model.EmployeeSummary;
 import com.roomreservation.calendarservice.model.RoomSummary;
@@ -77,6 +78,18 @@ public class CalendarEntryServiceImpl implements CalendarEntryService {
                         e.getEndTime()
                 ))
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void applyReservationStatusChanged(ReservationStatusChangedEvent event) {
+        List<CalendarEntry> entries = repo.findAllByReservationId(event.reservationId());
+
+        for (CalendarEntry e : entries) {
+            e.setStatus(event.newStatus());
+        }
+
+        repo.saveAll(entries);
     }
 
     private String buildEntryId(long reservationId, long roomId) {

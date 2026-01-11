@@ -2,6 +2,7 @@ package com.roomreservation.reservationservice.messaging.outbox;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent;
+import com.roomreservation.reservationservice.messaging.event.ReservationStatusChangedEvent;
 import com.roomreservation.reservationservice.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class OutboxPublisher {
 
     private final OutboxEventRepository outboxRepo;
     private final OutboxPayloadMapper outboxPayloadMapper;
-    private final KafkaTemplate<String, ReservationCreatedEvent> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     private static final int BATCH_SIZE = 20;
     private static final int MAX_RETRIES = 30;
@@ -40,7 +41,13 @@ public class OutboxPublisher {
 
         for (OutboxEvent e : batch) {
             try {
-                ReservationCreatedEvent evt = outboxPayloadMapper.fromJson(e.getPayload(), ReservationCreatedEvent.class);
+                Object evt = switch (e.getEventType()) {
+                    case "ReservationCreatedEvent" ->
+                            outboxPayloadMapper.fromJson(e.getPayload(), ReservationCreatedEvent.class);
+                    case "ReservationStatusChangedEvent" ->
+                            outboxPayloadMapper.fromJson(e.getPayload(), ReservationStatusChangedEvent.class);
+                    default -> throw new IllegalStateException("Unknown eventType=" + e.getEventType());
+                };
 
                 var sendResult = kafkaTemplate
                         .send(e.getTopic(), e.getEventKey(), evt)
@@ -95,9 +102,9 @@ public class OutboxPublisher {
         while (t.getCause() != null && t.getCause() != t && guard++ < 20) {
             t = t.getCause();
         }
-        String out = t.getClass().getSimpleName() + ": " + String.valueOf(t.getMessage());
+        String out = t.getClass().getSimpleName() + ": " + t.getMessage();
         log.warn("LAST_ERROR_TO_STORE = [{}]", out);
-        return shorten(t.getClass().getSimpleName() + ": " + String.valueOf(t.getMessage()));
+        return shorten(t.getClass().getSimpleName() + ": " + t.getMessage());
     }
 
     private static String shorten(String s) {

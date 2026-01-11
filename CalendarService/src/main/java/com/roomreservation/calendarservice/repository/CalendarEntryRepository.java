@@ -10,4 +10,5 @@ public interface CalendarEntryRepository extends MongoRepository<CalendarEntry, 
 
     List<CalendarEntry> findByStartTimeLessThanAndEndTimeGreaterThan(LocalDateTime dayEnd, LocalDateTime dayStart);
 
+    List<CalendarEntry> findAllByReservationId(Long reservationId);
 }

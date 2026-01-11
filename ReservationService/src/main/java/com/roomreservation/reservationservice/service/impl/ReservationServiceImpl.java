@@ -9,6 +9,7 @@ import com.roomreservation.reservationservice.dto.ReservationResponse;
 import com.roomreservation.reservationservice.exception.ResourceNotFoundException;
 import com.roomreservation.reservationservice.exception.ValidationException;
 import com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent;
+import com.roomreservation.reservationservice.messaging.event.ReservationStatusChangedEvent;
 import com.roomreservation.reservationservice.messaging.outbox.OutboxEvent;
 import com.roomreservation.reservationservice.messaging.outbox.OutboxPayloadMapper;
 import com.roomreservation.reservationservice.messaging.outbox.OutboxStatus;
@@ -81,32 +82,36 @@ public class ReservationServiceImpl implements ReservationService {
         }).toList();
 
         reservationRoomRepository.saveAll(links);
+        enqueueCreatedEvent(saved, empResp, roomSummaries);
+        return ReservationResponse.toResponse(reservation);
+    }
 
-        List<ReservationCreatedEvent.RoomSnapshot> roomSnapshots = roomSummaries.stream().map(r -> new ReservationCreatedEvent.RoomSnapshot(r.getRoomId(), r.getName())).toList();
+    private void enqueueCreatedEvent(Reservation reservation, GetEmployeeSummaryResponse empResp, List<RoomSummary> roomSummaries) {
+        List<ReservationCreatedEvent.RoomSnapshot> roomSnapshots = roomSummaries.stream()
+                .map(r -> new ReservationCreatedEvent.RoomSnapshot(r.getRoomId(), r.getName())).toList();
 
-        ReservationCreatedEvent createdEvent = new ReservationCreatedEvent(saved.getId(),
+        ReservationCreatedEvent createdEvent = new ReservationCreatedEvent(reservation.getId(),
                 new ReservationCreatedEvent.EmployeeSnapshot(empResp.getEmployeeId(), empResp.getFullName()),
-                saved.getReservationName(),
-                saved.getReservationType().getValue(),
-                saved.getReservationStatus().getValue(),
-                saved.getStartTime(),
-                saved.getEndTime(),
+                reservation.getReservationName(),
+                reservation.getReservationType().getValue(),
+                reservation.getReservationStatus().getValue(),
+                reservation.getStartTime(),
+                reservation.getEndTime(),
                 LocalDateTime.now(),
                 roomSnapshots);
 
+
         OutboxEvent outbox = new OutboxEvent();
         outbox.setAggregateType("Reservation");
-        outbox.setAggregateId(saved.getId());
+        outbox.setAggregateId(reservation.getId());
         outbox.setEventType("ReservationCreatedEvent");
         outbox.setTopic("reservation-created");
-        outbox.setEventKey(String.valueOf(saved.getId()));
+        outbox.setEventKey(String.valueOf(reservation.getId()));
         outbox.setPayload(outboxPayloadMapper.toJson(createdEvent));
         outbox.setStatus(OutboxStatus.NEW);
         outbox.setRetryCount(0);
         outbox.setCreatedAt(LocalDateTime.now());
-
         outboxEventRepository.save(outbox);
-        return ReservationResponse.toResponse(reservation);
     }
 
     @Override
@@ -121,7 +126,7 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
         changeStatus(reservation, ReservationStatus.APPROVED);
-        //TODO send event to Kafka for CalendarService
+        enqueueStatusChangedEvent(id, ReservationStatus.APPROVED);
         reservationRepository.save(reservation);
     }
 
@@ -131,7 +136,7 @@ public class ReservationServiceImpl implements ReservationService {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
         changeStatus(reservation, ReservationStatus.DECLINED);
-        //TODO send event to Kafka for CalendarService
+        enqueueStatusChangedEvent(id, ReservationStatus.DECLINED);
         reservationRepository.save(reservation);
     }
 
@@ -139,5 +144,26 @@ public class ReservationServiceImpl implements ReservationService {
         ReservationStatus current = reservation.getReservationStatus();
         ReservationValidator.validateTransition(current, target);
         reservation.setReservationStatus(target);
+    }
+
+    private void enqueueStatusChangedEvent(Long reservationId, ReservationStatus newStatus) {
+        ReservationStatusChangedEvent evt = new ReservationStatusChangedEvent(
+                reservationId,
+                newStatus.name(),
+                LocalDateTime.now()
+        );
+
+        OutboxEvent out = new OutboxEvent();
+        out.setAggregateType("Reservation");
+        out.setAggregateId(reservationId);
+        out.setEventType("ReservationStatusChangedEvent");
+        out.setTopic("reservation-status-changed");
+        out.setEventKey(String.valueOf(reservationId));
+        out.setStatus(OutboxStatus.NEW);
+        out.setRetryCount(0);
+        out.setCreatedAt(LocalDateTime.now());
+        out.setPayload(outboxPayloadMapper.toJson(evt));
+
+        outboxEventRepository.save(out);
     }
 }
