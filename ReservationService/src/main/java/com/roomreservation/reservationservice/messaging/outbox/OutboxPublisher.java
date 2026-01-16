@@ -24,12 +24,12 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class OutboxPublisher {
 
+    private static final int BATCH_SIZE = 20;
+    private static final int MAX_RETRIES = 30;
+
     private final OutboxEventRepository outboxRepo;
     private final OutboxPayloadMapper outboxPayloadMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-
-    private static final int BATCH_SIZE = 20;
-    private static final int MAX_RETRIES = 30;
 
     @Scheduled(fixedDelay = 1000)
     @Transactional

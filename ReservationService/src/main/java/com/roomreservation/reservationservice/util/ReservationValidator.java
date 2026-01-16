@@ -15,7 +15,7 @@ import java.util.Set;
 public class ReservationValidator {
 
     private static final LocalTime OPEN = LocalTime.of(8, 0);
-    private static final LocalTime CLOSE = LocalTime.of(20, 0);
+    private static final LocalTime CLOSE = LocalTime.of(22, 0);
 
     public static void validateForCreate(ReservationRequest request) {
         validateTimeRange(request);
@@ -46,7 +46,7 @@ public class ReservationValidator {
         }
 
         if (start.toLocalTime().isBefore(OPEN) || end.toLocalTime().isAfter(CLOSE)) {
-            throw new ValidationException("Reservations are allowed only between 08:00 and 20:00.");
+            throw new ValidationException("Reservations are allowed only between 08:00 and 22:00.");
         }
     }
 
