@@ -18,7 +18,7 @@ import com.roomreservation.reservationservice.model.enums.ReservationType;
 import com.roomreservation.reservationservice.repository.ReservationRepository;
 import com.roomreservation.reservationservice.repository.ReservationRoomRepository;
 import com.roomreservation.reservationservice.service.ReservationService;
-import com.roomreservation.reservationservice.util.ReservationValidator;
+import com.roomreservation.reservationservice.validation.ReservationValidationStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,12 +37,13 @@ public class ReservationServiceImpl implements ReservationService {
     private final OutboxEventEnqueuer outboxEventEnqueuer;
     private final ReservationRepository reservationRepository;
     private final ReservationRoomRepository reservationRoomRepository;
+    private final ReservationValidationStrategy reservationValidationStrategy;
 
     @Override
     @Transactional
     public ReservationResponse createReservation(ReservationRequest request) {
 
-        ReservationValidator.validateForCreate(request);
+        reservationValidationStrategy.validate(request);
 
         GetEmployeeSummaryResponse empResp = employeeGrpcClient.getEmployeeSummary(request.employeeId());
         if (!empResp.getExists()) {
@@ -70,7 +71,7 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setReservationStatus(ReservationStatus.PENDING);
         Reservation saved = reservationRepository.save(reservation);
 
-        List<ReservationRoom> links = request.roomIds().stream().distinct().map(roomId -> {
+        List<ReservationRoom> links = request.roomIds().stream().map(roomId -> {
             ReservationRoom rr = new ReservationRoom();
             rr.setReservationId(saved.getId());
             rr.setRoomId(roomId);
@@ -132,8 +133,14 @@ public class ReservationServiceImpl implements ReservationService {
 
     private void changeStatus(Reservation reservation, ReservationStatus target) {
         ReservationStatus current = reservation.getReservationStatus();
-        ReservationValidator.validateTransition(current, target);
+        validateTransition(current, target);
         reservation.setReservationStatus(target);
+    }
+
+    public static void validateTransition(ReservationStatus current, ReservationStatus target) {
+        if (!current.canTransitionTo(target)) {
+            throw new ValidationException("Invalid status transition: " + current + " -> " + target);
+        }
     }
 
     private void enqueueStatusChangedEvent(Long reservationId, ReservationStatus newStatus) {

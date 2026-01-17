@@ -8,9 +8,12 @@ import io.grpc.StatusRuntimeException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.List;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 
@@ -20,17 +23,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex) {
-        String joinedMessages = ex.getBindingResult().getFieldErrors().stream()
-                .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())
-                .reduce((m1, m2) -> m1 + "; " + m2)
-                .orElse("Validation error");
+        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
+                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                .toList();
 
-        log.warn("Validation failed: {}", joinedMessages);
+        log.warn("Validation failed: {}", String.join(" | ", errors));
 
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message("Validation failed")
-                .debugMessage(joinedMessages)
+                .errors(errors)
                 .build();
 
         return buildResponseEntity(apiError);
@@ -51,11 +53,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleValidationException(ValidationException ex) {
         log.warn("Malformed request:", ex);
 
-        ApiError apiError = ApiError.builder()
+        ApiError.ApiErrorBuilder builder = ApiError.builder()
                 .status(BAD_REQUEST.value())
-                .message("Malformed request")
-                .debugMessage(ex.getMessage()).build();
-        return buildResponseEntity(apiError);
+                .message("Malformed request");
+
+        if (!CollectionUtils.isEmpty(ex.getErrors())) {
+            builder.errors(ex.getErrors());
+        } else {
+            builder.debugMessage(ex.getMessage());
+        }
+
+        return buildResponseEntity(builder.build());
     }
 
     @ExceptionHandler(StatusRuntimeException.class)
