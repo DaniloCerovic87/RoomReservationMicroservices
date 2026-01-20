@@ -1,6 +1,5 @@
 package com.roomreservation.reservationservice.validation;
 
-import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.exception.ValidationException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -10,14 +9,14 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ReservationValidationChain {
+public class ReservationValidationChain<T> {
 
-    private final List<ReservationRule> rules;
+    private final List<ReservationRule<? super T>> rules;
 
-    public void validate(ReservationRequest request) {
+    public void validate(T request) {
         List<String> errors = new ArrayList<>();
 
-        for (ReservationRule rule : rules) {
+        for (ReservationRule<? super T> rule : rules) {
             rule.validate(request, errors);
         }
 
@@ -25,5 +24,4 @@ public class ReservationValidationChain {
             throw new ValidationException(errors);
         }
     }
-
 }

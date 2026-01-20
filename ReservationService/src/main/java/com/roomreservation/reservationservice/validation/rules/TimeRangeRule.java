@@ -1,15 +1,15 @@
 package com.roomreservation.reservationservice.validation.rules;
 
-import com.roomreservation.reservationservice.dto.ReservationRequest;
+import com.roomreservation.reservationservice.dto.HasTimeRange;
 import com.roomreservation.reservationservice.validation.ReservationRule;
 
 import java.time.Duration;
 import java.util.List;
 
-public class TimeRangeRule implements ReservationRule {
+public class TimeRangeRule implements ReservationRule<HasTimeRange> {
 
     @Override
-    public void validate(ReservationRequest request, List<String> errors) {
+    public void validate(HasTimeRange request, List<String> errors) {
         var start = request.startTime();
         var end = request.endTime();
 

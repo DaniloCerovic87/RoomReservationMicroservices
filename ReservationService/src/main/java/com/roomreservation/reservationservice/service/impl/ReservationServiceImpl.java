@@ -4,6 +4,7 @@ import com.roomreservation.contracts.employee.grpc.GetEmployeeSummaryResponse;
 import com.roomreservation.contracts.room.grpc.RoomSummary;
 import com.roomreservation.reservationservice.client.EmployeeGrpcClient;
 import com.roomreservation.reservationservice.client.RoomGrpcClient;
+import com.roomreservation.reservationservice.dto.BusyRoomsRequest;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
 import com.roomreservation.reservationservice.exception.ResourceNotFoundException;
@@ -21,6 +22,8 @@ import com.roomreservation.reservationservice.service.ReservationService;
 import com.roomreservation.reservationservice.validation.ReservationValidationStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,7 +31,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class ReservationServiceImpl implements ReservationService {
 
@@ -37,13 +39,33 @@ public class ReservationServiceImpl implements ReservationService {
     private final OutboxEventEnqueuer outboxEventEnqueuer;
     private final ReservationRepository reservationRepository;
     private final ReservationRoomRepository reservationRoomRepository;
-    private final ReservationValidationStrategy reservationValidationStrategy;
+
+    private final ReservationValidationStrategy<ReservationRequest> createReservationStrategy;
+    private final ReservationValidationStrategy<BusyRoomsRequest> findBusyRoomsStrategy;
+
+    public ReservationServiceImpl(
+            EmployeeGrpcClient employeeGrpcClient,
+            RoomGrpcClient roomGrpcClient,
+            OutboxEventEnqueuer outboxEventEnqueuer,
+            ReservationRepository reservationRepository,
+            ReservationRoomRepository reservationRoomRepository,
+            @Qualifier("createReservationValidationStrategy") ReservationValidationStrategy createReservationStrategy,
+            @Qualifier("findBusyRoomsValidationStrategy") ReservationValidationStrategy findBusyRoomsStrategy
+    ) {
+        this.employeeGrpcClient = employeeGrpcClient;
+        this.roomGrpcClient = roomGrpcClient;
+        this.outboxEventEnqueuer = outboxEventEnqueuer;
+        this.reservationRepository = reservationRepository;
+        this.reservationRoomRepository = reservationRoomRepository;
+        this.createReservationStrategy = createReservationStrategy;
+        this.findBusyRoomsStrategy = findBusyRoomsStrategy;
+    }
 
     @Override
     @Transactional
     public ReservationResponse createReservation(ReservationRequest request) {
 
-        reservationValidationStrategy.validate(request);
+        createReservationStrategy.validate(request);
 
         GetEmployeeSummaryResponse empResp = employeeGrpcClient.getEmployeeSummary(request.employeeId());
         if (!empResp.getExists()) {
@@ -73,7 +95,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         List<ReservationRoom> links = request.roomIds().stream().map(roomId -> {
             ReservationRoom rr = new ReservationRoom();
-            rr.setReservationId(saved.getId());
+            rr.setReservation(saved);
             rr.setRoomId(roomId);
             return rr;
         }).toList();
@@ -156,5 +178,11 @@ public class ReservationServiceImpl implements ReservationService {
                 "reservation-status-changed",
                 evt
         );
+    }
+
+    @Override
+    public List<Long> findBusyRoomIds(BusyRoomsRequest request) {
+        findBusyRoomsStrategy.validate(request);
+        return reservationRoomRepository.findBusyRoomIds(request.startTime(), request.endTime());
     }
 }

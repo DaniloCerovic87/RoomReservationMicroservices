@@ -1,5 +1,6 @@
 package com.roomreservation.reservationservice.controller;
 
+import com.roomreservation.reservationservice.dto.BusyRoomsRequest;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
 import com.roomreservation.reservationservice.service.ReservationService;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reservations")
@@ -33,5 +36,13 @@ public class ReservationController {
         reservationService.declineReservation(id);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/busy-room-ids")
+    public ResponseEntity<List<Long>> busyRoomIds(
+            @Valid @ModelAttribute BusyRoomsRequest request
+    ) {
+        return ResponseEntity.ok(reservationService.findBusyRoomIds(request));
+    }
+
 
 }

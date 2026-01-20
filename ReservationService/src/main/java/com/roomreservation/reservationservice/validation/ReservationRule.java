@@ -1,11 +1,9 @@
 package com.roomreservation.reservationservice.validation;
 
-import com.roomreservation.reservationservice.dto.ReservationRequest;
-
 import java.util.List;
 
-public interface ReservationRule {
+public interface ReservationRule<T> {
 
-    void validate(ReservationRequest request, List<String> errors);
+    void validate(T request, List<String> errors);
 
 }
