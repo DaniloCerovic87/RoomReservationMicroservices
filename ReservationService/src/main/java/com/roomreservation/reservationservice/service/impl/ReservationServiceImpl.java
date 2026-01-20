@@ -20,10 +20,8 @@ import com.roomreservation.reservationservice.repository.ReservationRepository;
 import com.roomreservation.reservationservice.repository.ReservationRoomRepository;
 import com.roomreservation.reservationservice.service.ReservationService;
 import com.roomreservation.reservationservice.validation.ReservationValidationStrategy;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,6 +57,12 @@ public class ReservationServiceImpl implements ReservationService {
         this.reservationRoomRepository = reservationRoomRepository;
         this.createReservationStrategy = createReservationStrategy;
         this.findBusyRoomsStrategy = findBusyRoomsStrategy;
+    }
+
+    public static void validateTransition(ReservationStatus current, ReservationStatus target) {
+        if (!current.canTransitionTo(target)) {
+            throw new ValidationException("Invalid status transition: " + current + " -> " + target);
+        }
     }
 
     @Override
@@ -157,12 +161,6 @@ public class ReservationServiceImpl implements ReservationService {
         ReservationStatus current = reservation.getReservationStatus();
         validateTransition(current, target);
         reservation.setReservationStatus(target);
-    }
-
-    public static void validateTransition(ReservationStatus current, ReservationStatus target) {
-        if (!current.canTransitionTo(target)) {
-            throw new ValidationException("Invalid status transition: " + current + " -> " + target);
-        }
     }
 
     private void enqueueStatusChangedEvent(Long reservationId, ReservationStatus newStatus) {

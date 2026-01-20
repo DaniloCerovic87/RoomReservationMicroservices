@@ -12,10 +12,9 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class EmployeeGrpcClient {
 
+    private final JwtGrpcClientInterceptor jwtGrpcClientInterceptor;
     @GrpcClient("employeeService")
     private EmployeeGrpcServiceGrpc.EmployeeGrpcServiceBlockingStub stub;
-
-    private final JwtGrpcClientInterceptor jwtGrpcClientInterceptor;
 
     public GetEmployeeSummaryResponse getEmployeeSummary(Long employeeId) {
         var req = GetEmployeeSummaryRequest.newBuilder()

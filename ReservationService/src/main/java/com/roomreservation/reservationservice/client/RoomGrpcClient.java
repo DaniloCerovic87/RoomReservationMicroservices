@@ -16,10 +16,9 @@ import java.util.List;
 @Slf4j
 public class RoomGrpcClient {
 
+    private final JwtGrpcClientInterceptor jwtGrpcClientInterceptor;
     @GrpcClient("roomService")
     private RoomGrpcServiceGrpc.RoomGrpcServiceBlockingStub stub;
-
-    private final JwtGrpcClientInterceptor jwtGrpcClientInterceptor;
 
     public List<RoomSummary> getRoomSummaries(List<Long> ids) {
         var req = GetRoomSummariesRequest.newBuilder()

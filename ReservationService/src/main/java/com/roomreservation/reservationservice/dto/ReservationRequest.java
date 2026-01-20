@@ -8,7 +8,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public record ReservationRequest (
+public record ReservationRequest(
 
         @NotNull(message = "Employee ID is required")
         Long employeeId,

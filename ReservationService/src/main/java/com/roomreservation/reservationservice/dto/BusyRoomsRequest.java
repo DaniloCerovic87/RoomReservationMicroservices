@@ -13,4 +13,5 @@ public record BusyRoomsRequest(
         @NotNull(message = "Reservation end time is required")
         @FutureOrPresent(message = "Reservation end time must be in the present or future")
         LocalDateTime endTime
-) implements HasTimeRange {}
+) implements HasTimeRange {
+}

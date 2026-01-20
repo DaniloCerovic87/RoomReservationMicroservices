@@ -21,6 +21,17 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 @Slf4j
 public class GlobalExceptionHandler {
 
+    private static HttpStatus getHttpStatus(Status.Code code) {
+        return switch (code) {
+            case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
+            case PERMISSION_DENIED -> HttpStatus.FORBIDDEN;
+            case INVALID_ARGUMENT -> HttpStatus.BAD_REQUEST;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case UNAVAILABLE, DEADLINE_EXCEEDED -> HttpStatus.SERVICE_UNAVAILABLE;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
+        };
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex) {
         List<String> errors = ex.getBindingResult().getFieldErrors().stream()
@@ -94,18 +105,6 @@ public class GlobalExceptionHandler {
 
         return buildResponseEntity(apiError);
     }
-
-    private static HttpStatus getHttpStatus(Status.Code code) {
-        return switch (code) {
-            case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
-            case PERMISSION_DENIED -> HttpStatus.FORBIDDEN;
-            case INVALID_ARGUMENT -> HttpStatus.BAD_REQUEST;
-            case NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case UNAVAILABLE, DEADLINE_EXCEEDED -> HttpStatus.SERVICE_UNAVAILABLE;
-            default -> HttpStatus.INTERNAL_SERVER_ERROR;
-        };
-    }
-
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleAllUnhandledExceptions(Exception ex) {

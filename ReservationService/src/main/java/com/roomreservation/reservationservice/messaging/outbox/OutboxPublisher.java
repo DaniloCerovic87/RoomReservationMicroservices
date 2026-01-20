@@ -31,6 +31,27 @@ public class OutboxPublisher {
     private final OutboxPayloadMapper outboxPayloadMapper;
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
+    private static boolean isPermanent(Throwable ex) {
+        Throwable t = ex;
+        while (t != null) {
+            if (t instanceof JsonProcessingException) return true;
+            if (t instanceof SerializationException) return true;
+            if (t instanceof AuthorizationException) return true;
+            if (t instanceof InvalidTopicException) return true;
+            if (t instanceof RecordTooLargeException) return true;
+            t = t.getCause();
+        }
+        return false;
+    }
+
+    private static String shorten(String s) {
+        int max = 2000;
+        if (s == null) {
+            return null;
+        }
+        return s.length() <= max ? s : s.substring(0, max);
+    }
+
     @Scheduled(fixedDelay = 1000)
     @Transactional
     public void publishBatch() {
@@ -83,19 +104,6 @@ public class OutboxPublisher {
         outboxRepo.saveAll(batch);
     }
 
-    private static boolean isPermanent(Throwable ex) {
-        Throwable t = ex;
-        while (t != null) {
-            if (t instanceof JsonProcessingException) return true;
-            if (t instanceof SerializationException) return true;
-            if (t instanceof AuthorizationException) return true;
-            if (t instanceof InvalidTopicException) return true;
-            if (t instanceof RecordTooLargeException) return true;
-            t = t.getCause();
-        }
-        return false;
-    }
-
     private String rootCauseNameAndMessage(Throwable ex) {
         Throwable t = ex;
         int guard = 0;
@@ -105,13 +113,5 @@ public class OutboxPublisher {
         String out = t.getClass().getSimpleName() + ": " + t.getMessage();
         log.warn("LAST_ERROR_TO_STORE = [{}]", out);
         return shorten(t.getClass().getSimpleName() + ": " + t.getMessage());
-    }
-
-    private static String shorten(String s) {
-        int max = 2000;
-        if (s == null) {
-            return null;
-        }
-        return s.length() <= max ? s : s.substring(0, max);
     }
 }
