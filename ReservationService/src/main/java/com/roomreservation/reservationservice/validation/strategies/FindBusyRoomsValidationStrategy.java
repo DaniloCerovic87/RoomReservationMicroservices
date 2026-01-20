@@ -1,6 +1,6 @@
 package com.roomreservation.reservationservice.validation.strategies;
 
-import com.roomreservation.reservationservice.dto.HasTimeRange;
+import com.roomreservation.reservationservice.dto.BusyRoomsRequest;
 import com.roomreservation.reservationservice.validation.ReservationValidationChain;
 import com.roomreservation.reservationservice.validation.ReservationValidationStrategy;
 import com.roomreservation.reservationservice.validation.rules.TimeRangeRule;
@@ -10,9 +10,9 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
-public class FindBusyRoomsValidationStrategy implements ReservationValidationStrategy<HasTimeRange> {
+public class FindBusyRoomsValidationStrategy implements ReservationValidationStrategy<BusyRoomsRequest> {
 
-    private final ReservationValidationChain<HasTimeRange> chain = new ReservationValidationChain<>(
+    private final ReservationValidationChain<BusyRoomsRequest> chain = new ReservationValidationChain<>(
             List.of(
                     new TimeRangeRule(),
                     new WorkingHoursRule()
@@ -20,7 +20,7 @@ public class FindBusyRoomsValidationStrategy implements ReservationValidationStr
     );
 
     @Override
-    public void validate(HasTimeRange request) {
+    public void validate(BusyRoomsRequest request) {
         chain.validate(request);
     }
 

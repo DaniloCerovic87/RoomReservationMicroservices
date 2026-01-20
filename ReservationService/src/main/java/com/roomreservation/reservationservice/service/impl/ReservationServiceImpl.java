@@ -20,8 +20,8 @@ import com.roomreservation.reservationservice.repository.ReservationRepository;
 import com.roomreservation.reservationservice.repository.ReservationRoomRepository;
 import com.roomreservation.reservationservice.service.ReservationService;
 import com.roomreservation.reservationservice.validation.ReservationValidationStrategy;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +30,7 @@ import java.util.List;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class ReservationServiceImpl implements ReservationService {
 
     private final EmployeeGrpcClient employeeGrpcClient;
@@ -37,27 +38,8 @@ public class ReservationServiceImpl implements ReservationService {
     private final OutboxEventEnqueuer outboxEventEnqueuer;
     private final ReservationRepository reservationRepository;
     private final ReservationRoomRepository reservationRoomRepository;
-
     private final ReservationValidationStrategy<ReservationRequest> createReservationStrategy;
     private final ReservationValidationStrategy<BusyRoomsRequest> findBusyRoomsStrategy;
-
-    public ReservationServiceImpl(
-            EmployeeGrpcClient employeeGrpcClient,
-            RoomGrpcClient roomGrpcClient,
-            OutboxEventEnqueuer outboxEventEnqueuer,
-            ReservationRepository reservationRepository,
-            ReservationRoomRepository reservationRoomRepository,
-            @Qualifier("createReservationValidationStrategy") ReservationValidationStrategy createReservationStrategy,
-            @Qualifier("findBusyRoomsValidationStrategy") ReservationValidationStrategy findBusyRoomsStrategy
-    ) {
-        this.employeeGrpcClient = employeeGrpcClient;
-        this.roomGrpcClient = roomGrpcClient;
-        this.outboxEventEnqueuer = outboxEventEnqueuer;
-        this.reservationRepository = reservationRepository;
-        this.reservationRoomRepository = reservationRoomRepository;
-        this.createReservationStrategy = createReservationStrategy;
-        this.findBusyRoomsStrategy = findBusyRoomsStrategy;
-    }
 
     public static void validateTransition(ReservationStatus current, ReservationStatus target) {
         if (!current.canTransitionTo(target)) {
