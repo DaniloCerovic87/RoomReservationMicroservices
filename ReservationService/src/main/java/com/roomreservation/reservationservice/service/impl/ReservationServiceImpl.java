@@ -55,7 +55,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         GetEmployeeSummaryResponse empResp = employeeGrpcClient.getEmployeeSummary(request.employeeId());
         if (!empResp.getExists()) {
-            throw new ValidationException("Employee does not exist: " + request.employeeId());
+            throw new ValidationException("Employee was not found. Please sign in again or contact admin");
         }
 
         List<RoomSummary> roomSummaries = roomGrpcClient.getRoomSummaries(request.roomIds());
