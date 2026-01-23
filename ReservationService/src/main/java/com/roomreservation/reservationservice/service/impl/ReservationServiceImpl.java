@@ -88,7 +88,7 @@ public class ReservationServiceImpl implements ReservationService {
 
         reservationRoomRepository.saveAll(links);
         enqueueCreatedEvent(saved, empResp, roomSummaries);
-        return ReservationResponse.toResponse(saved);
+        return ReservationResponse.toResponse(saved, request.roomIds(), empResp.getFullName());
     }
 
     private void enqueueCreatedEvent(Reservation reservation, GetEmployeeSummaryResponse empResp, List<RoomSummary> roomSummaries) {
