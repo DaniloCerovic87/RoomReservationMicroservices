@@ -9,25 +9,14 @@ import lombok.RequiredArgsConstructor;
 public enum ReservationStatus {
     PENDING("Pending"),
     APPROVED("Approved"),
-    DECLINED("Declined"),
-    CANCELLED("Cancelled");
+    DECLINED("Declined");
 
     private final String value;
 
-    public static ReservationStatus fromValue(String value) {
-        for (ReservationStatus status : ReservationStatus.values()) {
-            if (status.value.equalsIgnoreCase(value)) {
-                return status;
-            }
-        }
-        throw new ValidationException("Unknown reservation status: {0}", value);
-    }
-
     public boolean canTransitionTo(ReservationStatus target) {
         return switch (this) {
-            case PENDING -> target == APPROVED || target == DECLINED || target == CANCELLED;
-            case APPROVED -> target == CANCELLED;
-            case DECLINED, CANCELLED -> false;
+            case PENDING -> target == APPROVED || target == DECLINED;
+            case APPROVED, DECLINED -> false;
         };
     }
 
