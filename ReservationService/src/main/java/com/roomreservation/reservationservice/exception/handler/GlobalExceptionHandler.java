@@ -5,6 +5,7 @@ import com.roomreservation.reservationservice.exception.ValidationException;
 import com.roomreservation.reservationservice.exception.response.ApiError;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,8 +62,8 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(ValidationException.class)
-    public ResponseEntity<ApiError> handleValidationException(ValidationException ex) {
-        log.warn("Malformed request:", ex);
+    public ResponseEntity<ApiError> handleValidation(ValidationException ex, HttpServletRequest req) {
+        log.warn("Validation error on {} {}: {}", req.getMethod(), req.getRequestURI(), ex.getMessage(), ex);
 
         ApiError.ApiErrorBuilder builder = ApiError.builder()
                 .status(BAD_REQUEST.value())
