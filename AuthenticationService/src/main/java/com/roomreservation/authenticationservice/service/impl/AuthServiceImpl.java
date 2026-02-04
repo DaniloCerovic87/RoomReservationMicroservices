@@ -4,8 +4,9 @@ import com.roomreservation.authenticationservice.dto.AuthResponse;
 import com.roomreservation.authenticationservice.dto.CompleteRegistrationRequest;
 import com.roomreservation.authenticationservice.dto.InviteUserRequest;
 import com.roomreservation.authenticationservice.dto.LoginRequest;
-import com.roomreservation.authenticationservice.event.UserInvitedEvent;
 import com.roomreservation.authenticationservice.exception.*;
+import com.roomreservation.authenticationservice.messaging.event.UserInvitedEvent;
+import com.roomreservation.authenticationservice.messaging.outbox.OutboxEventEnqueuer;
 import com.roomreservation.authenticationservice.model.User;
 import com.roomreservation.authenticationservice.model.enums.Role;
 import com.roomreservation.authenticationservice.model.enums.UserStatus;
@@ -14,7 +15,6 @@ import com.roomreservation.authenticationservice.security.JwtService;
 import com.roomreservation.authenticationservice.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final KafkaTemplate<String, UserInvitedEvent> kafkaTemplate;
+    private final OutboxEventEnqueuer outboxEventEnqueuer;
 
     @Transactional
     public void inviteUser(InviteUserRequest request) {
@@ -61,17 +61,7 @@ public class AuthServiceImpl implements AuthService {
                 user.getActivationExpiresAt()
         );
 
-        kafkaTemplate.send("user-invited", String.valueOf(user.getId()), event)
-                .whenComplete((res, ex) -> {
-                    if (ex != null) {
-                        log.error("Failed to publish user.invited for userId={}", user.getId(), ex);
-                    } else {
-                        log.info("Published user.invited for userId={} partition={} offset={}",
-                                user.getId(),
-                                res.getRecordMetadata().partition(),
-                                res.getRecordMetadata().offset());
-                    }
-                });
+        outboxEventEnqueuer.enqueueUserInvitedEvent(user.getId(), event);
     }
 
     private String generateActivationToken() {

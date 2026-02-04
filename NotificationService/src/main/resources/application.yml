@@ -19,7 +19,7 @@ spring:
       value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
         spring.json.trusted.packages: "*"
-        spring.json.type.mapping: com.roomreservation.authenticationservice.event.UserInvitedEvent:com.roomreservation.notificationservice.event.UserInvitedEvent
+        spring.json.type.mapping: com.roomreservation.authenticationservice.messaging.event.UserInvitedEvent:com.roomreservation.notificationservice.event.UserInvitedEvent
 app:
   kafka:
     topics:

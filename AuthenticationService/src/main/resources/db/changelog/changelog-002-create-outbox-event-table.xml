@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="002-create-outbox-event-table" author="danilo.cerovic">
+        <sql>
+            CREATE TABLE outbox_event
+            (
+                id             BIGSERIAL PRIMARY KEY,
+                aggregate_type TEXT      NOT NULL,
+                aggregate_id   BIGINT    NOT NULL,
+                event_type     TEXT      NOT NULL,
+                topic          TEXT      NOT NULL,
+                event_key      TEXT      NOT NULL,
+                payload        JSONB     NOT NULL,
+                status         TEXT      NOT NULL,
+                retry_count    INT       NOT NULL DEFAULT 0,
+                last_error     TEXT NULL,
+                created_at     TIMESTAMP NOT NULL DEFAULT now(),
+                sent_at        TIMESTAMP NULL
+            );
+        </sql>
+    </changeSet>
+
+
+</databaseChangeLog>

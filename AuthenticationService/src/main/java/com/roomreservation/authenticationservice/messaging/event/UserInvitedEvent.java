@@ -1,4 +1,4 @@
-package com.roomreservation.authenticationservice.event;
+package com.roomreservation.authenticationservice.messaging.event;
 
 import java.time.LocalDateTime;
 
