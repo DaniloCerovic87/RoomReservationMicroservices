@@ -17,12 +17,12 @@ public class WorkingHoursRule implements ReservationRule<HasTimeRange> {
         var end = request.endTime();
 
         if (!start.toLocalDate().equals(end.toLocalDate())) {
-            errors.add("Reservation must be within a single day.");
+            errors.add("RESERVATION_MUST_BE_WITHIN_SINGLE_DAY");
             return;
         }
 
         if (start.toLocalTime().isBefore(OPEN) || end.toLocalTime().isAfter(CLOSE)) {
-            errors.add("Reservations are allowed only between 08:00 and 22:00.");
+            errors.add("RESERVATION_MUST_BE_WITHIN_SINGLE_DAY");
         }
     }
 }

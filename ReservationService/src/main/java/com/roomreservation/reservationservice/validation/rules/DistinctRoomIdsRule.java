@@ -12,7 +12,7 @@ public class DistinctRoomIdsRule implements ReservationRule<ReservationRequest> 
     public void validate(ReservationRequest request, List<String> errors) {
         var unique = new HashSet<>(request.roomIds());
         if (unique.size() != request.roomIds().size()) {
-            errors.add("You can't select the same room more than once.");
+            errors.add("DUPLICATE_ROOMS_SELECTED");
         }
     }
 }

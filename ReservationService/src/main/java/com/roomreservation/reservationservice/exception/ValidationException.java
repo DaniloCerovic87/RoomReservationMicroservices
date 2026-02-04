@@ -7,21 +7,16 @@ import java.util.List;
 @Getter
 public class ValidationException extends RuntimeException {
 
-    private final List<String> errors;
+    private final List<String> errorCodes;
 
-    public ValidationException(String message) {
-        super(message);
-        errors = null;
-    }
-
-    public ValidationException(String message, String value) {
-        super(String.format(message, value));
-        errors = null;
-    }
-
-    public ValidationException(List<String> errors) {
+    public ValidationException(String errorCode) {
         super("Validation failed");
-        this.errors = List.copyOf(errors);
+        this.errorCodes = List.of(errorCode);
+    }
+
+    public ValidationException(List<String> errorCodes) {
+        super("Validation failed");
+        this.errorCodes = List.copyOf(errorCodes);
     }
 
 }

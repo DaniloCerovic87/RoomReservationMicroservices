@@ -43,7 +43,7 @@ public class ReservationServiceImpl implements ReservationService {
 
     public static void validateTransition(ReservationStatus current, ReservationStatus target) {
         if (!current.canTransitionTo(target)) {
-            throw new ValidationException("Invalid status transition: " + current + " -> " + target);
+            throw new ValidationException("INVALID_STATUS_TRANSITION");
         }
     }
 
@@ -55,19 +55,19 @@ public class ReservationServiceImpl implements ReservationService {
 
         GetEmployeeSummaryResponse empResp = employeeGrpcClient.getEmployeeSummary(request.employeeId());
         if (!empResp.getExists()) {
-            throw new ValidationException("Employee was not found. Please sign in again or contact admin");
+            throw new ValidationException("EMPLOYEE_NOT_FOUND");
         }
 
         List<RoomSummary> roomSummaries = roomGrpcClient.getRoomSummaries(request.roomIds());
 
         if (request.roomIds().size() != roomSummaries.size()) {
-            throw new ValidationException("One or more rooms do not exist or are deleted");
+            throw new ValidationException("ROOM_NOT_FOUND");
         }
 
         boolean conflict = reservationRepository.existsOverlappingReservation(request.roomIds(), request.startTime(), request.endTime());
 
         if (conflict) {
-            throw new ValidationException("One or more chosen rooms are already reserved in the requested time slot");
+            throw new ValidationException("ROOM_ALREADY_RESERVED");
         }
 
         Reservation reservation = new Reservation();
@@ -123,7 +123,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public void approveReservation(Long id) {
         Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+                .orElseThrow(() -> new ResourceNotFoundException("RESERVATION_NOT_FOUND"));
         changeStatus(reservation, ReservationStatus.APPROVED);
         enqueueStatusChangedEvent(reservation.getId(), ReservationStatus.APPROVED);
         reservationRepository.save(reservation);
@@ -133,7 +133,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Transactional
     public void declineReservation(Long id) {
         Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Reservation", id));
+                .orElseThrow(() -> new ResourceNotFoundException("RESERVATION_NOT_FOUND"));
         changeStatus(reservation, ReservationStatus.DECLINED);
         enqueueStatusChangedEvent(reservation.getId(), ReservationStatus.DECLINED);
         reservationRepository.save(reservation);

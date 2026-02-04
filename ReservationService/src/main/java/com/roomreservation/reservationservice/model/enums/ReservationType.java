@@ -20,6 +20,6 @@ public enum ReservationType {
                 return status;
             }
         }
-        throw new ValidationException("Unknown reservation type: {0}", value);
+        throw new ValidationException("INVALID_RESERVATION_TYPE");
     }
 }

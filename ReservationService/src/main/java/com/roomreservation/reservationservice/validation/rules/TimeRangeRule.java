@@ -14,13 +14,13 @@ public class TimeRangeRule implements ReservationRule<HasTimeRange> {
         var end = request.endTime();
 
         if (!end.isAfter(start)) {
-            errors.add("Reservation end time must be after start time");
+            errors.add("END_TIME_MUST_BE_AFTER_START_TIME");
             return;
         }
 
         long minutes = Duration.between(start, end).toMinutes();
         if (minutes < 15) {
-            errors.add("Reservation must be at least 15 minutes long");
+            errors.add("RESERVATION_TOO_SHORT");
         }
     }
 }

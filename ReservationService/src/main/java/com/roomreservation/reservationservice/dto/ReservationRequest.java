@@ -10,24 +10,24 @@ import java.util.List;
 
 public record ReservationRequest(
 
-        @NotNull(message = "Employee ID is required")
+        @NotNull(message = "EMPLOYEE_ID_REQUIRED")
         Long employeeId,
 
-        @NotEmpty
-        List<@NotNull Long> roomIds,
+        @NotEmpty(message = "ROOM_IDS_REQUIRED")
+        List<@NotNull(message = "ROOM_ID_REQUIRED") Long> roomIds,
 
-        @NotBlank(message = "Reservation name is required")
+        @NotBlank(message = "RESERVATION_NAME_REQUIRED")
         String reservationName,
 
-        @NotNull
+        @NotNull(message = "RESERVATION_TYPE_REQUIRED")
         String reservationType,
 
-        @NotNull(message = "Reservation start time is required")
-        @FutureOrPresent(message = "Reservation start time must be in the present or future")
+        @NotNull(message = "START_TIME_REQUIRED")
+        @FutureOrPresent(message = "START_TIME_MUST_BE_PRESENT_OR_FUTURE")
         LocalDateTime startTime,
 
-        @NotNull(message = "Reservation end time is required")
-        @FutureOrPresent(message = "Reservation end time must be in the present or future")
+        @NotNull(message = "END_TIME_REQUIRED")
+        @FutureOrPresent(message = "END_TIME_MUST_BE_PRESENT_OR_FUTURE")
         LocalDateTime endTime
 
 ) implements HasTimeRange {

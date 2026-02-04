@@ -7,9 +7,9 @@ import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -34,48 +34,85 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiError> handleValidationErrors(MethodArgumentNotValidException ex) {
-        List<String> errors = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+    public ResponseEntity<ApiError> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest req
+    ) {
+        List<String> errorCodes = ex.getBindingResult()
+                .getAllErrors()
+                .stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .filter(msg -> msg != null && !msg.isBlank())
+                .distinct()
                 .toList();
 
-        log.warn("Validation failed: {}", String.join(" | ", errors));
+        String url = req.getRequestURL().toString();
+        String qs = req.getQueryString();
+        String fullUrl = (qs == null || qs.isBlank()) ? url : (url + "?" + qs);
+
+        log.warn(
+                "Bean validation failed | {} {} | url={} | codes={}",
+                req.getMethod(),
+                req.getRequestURI(),
+                fullUrl,
+                errorCodes,
+                ex
+        );
 
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.BAD_REQUEST.value())
-                .message("Validation failed")
-                .errors(errors)
+                .code("VALIDATION_FAILED")
+                .errorCodes(errorCodes)
                 .build();
 
         return buildResponseEntity(apiError);
     }
 
+
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ApiError> handleResourceNotFound(ResourceNotFoundException ex) {
-        ApiError apiError = ApiError.builder()
+    public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex, HttpServletRequest req) {
+        String url = req.getRequestURL().toString();
+        String qs = req.getQueryString();
+        String fullUrl = (qs == null || qs.isBlank()) ? url : (url + "?" + qs);
+
+        log.warn("Not found | {} {} | url={} | code={}",
+                req.getMethod(),
+                req.getRequestURI(),
+                fullUrl,
+                ex.getErrorCode(),
+                ex
+        );
+
+        ApiError error = ApiError.builder()
                 .status(HttpStatus.NOT_FOUND.value())
-                .message("Resource not found")
-                .debugMessage(ex.getMessage())
+                .code("NOT_FOUND")
+                .errorCodes(List.of(ex.getErrorCode()))
                 .build();
 
-        return buildResponseEntity(apiError);
+        return buildResponseEntity(error);
     }
 
     @ExceptionHandler(ValidationException.class)
     public ResponseEntity<ApiError> handleValidation(ValidationException ex, HttpServletRequest req) {
-        log.warn("Validation error on {} {}: {}", req.getMethod(), req.getRequestURI(), ex.getMessage(), ex);
+        String url = req.getRequestURL().toString();
+        String qs = req.getQueryString();
+        String fullUrl = (qs == null || qs.isBlank()) ? url : (url + "?" + qs);
 
-        ApiError.ApiErrorBuilder builder = ApiError.builder()
+        log.warn(
+                "Validation failed | {} {} | url={} | codes={} | message={}",
+                req.getMethod(),
+                req.getRequestURI(),
+                fullUrl,
+                ex.getErrorCodes(),
+                ex.getMessage(),
+                ex
+        );
+        ApiError error = ApiError.builder()
                 .status(BAD_REQUEST.value())
-                .message("Malformed request");
+                .code("VALIDATION_FAILED")
+                .errorCodes(ex.getErrorCodes()).build();
 
-        if (!CollectionUtils.isEmpty(ex.getErrors())) {
-            builder.errors(ex.getErrors());
-        } else {
-            builder.debugMessage(ex.getMessage());
-        }
-
-        return buildResponseEntity(builder.build());
+        return buildResponseEntity(error);
     }
 
     @ExceptionHandler(StatusRuntimeException.class)
@@ -100,21 +137,19 @@ public class GlobalExceptionHandler {
 
         ApiError apiError = ApiError.builder()
                 .status(httpStatus.value())
-                .message("Downstream gRPC call failed")
-                .debugMessage(debug)
+                .code("DOWNSTREAM_SERVICE_ERROR")
                 .build();
 
         return buildResponseEntity(apiError);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiError> handleAllUnhandledExceptions(Exception ex) {
-        log.error("Unexpected internal error:", ex);
+    public ResponseEntity<ApiError> handleAllUnhandledExceptions(Exception ex, HttpServletRequest req) {
+        log.error("Unhandled exception | {} {}", req.getMethod(), req.getRequestURI(), ex);
 
         ApiError apiError = ApiError.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Unexpected error occurred")
-                .debugMessage(ex.getMessage())
+                .code("INTERNAL_SERVER_ERROR")
                 .build();
 
         return buildResponseEntity(apiError);

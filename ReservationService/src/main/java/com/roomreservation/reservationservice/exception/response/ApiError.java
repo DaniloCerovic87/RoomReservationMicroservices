@@ -17,9 +17,7 @@ public class ApiError {
     @Builder.Default
     private LocalDateTime timestamp = LocalDateTime.now();
 
-    private String message;
+    private String code;
 
-    private String debugMessage;
-
-    private List<String> errors;
+    private List<String> errorCodes;
 }
