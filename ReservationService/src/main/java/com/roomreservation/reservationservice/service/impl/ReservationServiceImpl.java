@@ -42,6 +42,7 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRoomRepository reservationRoomRepository;
     private final ReservationValidationStrategy<ReservationRequest> createReservationStrategy;
     private final ReservationValidationStrategy<BusyRoomsRequest> findBusyRoomsStrategy;
+    private final ReservationValidationStrategy<ReviewReservationRequest> reviewReservationValidationStrategy;
 
     public static void validateTransition(ReservationStatus current, ReservationStatus target) {
         if (!current.canTransitionTo(target)) {
@@ -123,32 +124,30 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public void reviewReservationRooms(Long reservationId, ReviewReservationRequest request) {
-
         Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("RESERVATION_NOT_FOUND"));
 
-        Set<Long> approveSet = new HashSet<>(request.approveRoomIds());
+        reviewReservationValidationStrategy.validate(request);
+
+        Set<Long> approveSet = request.approveRoomIds() == null
+                ? Set.of()
+                : new HashSet<>(request.approveRoomIds());
 
         Map<Long, String> declineMap = new HashMap<>();
-        for (var d : request.declineRooms()) {
-            if (declineMap.putIfAbsent(d.roomId(), d.comment().trim()) != null) {
-                throw new ValidationException("DUPLICATE_ROOM_ID_IN_DECLINE_LIST");
+        if (request.declineRooms() != null) {
+            for (var d : request.declineRooms()) {
+                String trimmed = d.comment() == null ? "" : d.comment().trim();
+                declineMap.put(d.roomId(), trimmed);
             }
         }
-        Set<Long> declineSet = declineMap.keySet();
 
-        Set<Long> intersection = new HashSet<>(approveSet);
-        intersection.retainAll(declineSet);
-        if (!intersection.isEmpty()) {
-            throw new ValidationException("ROOM_ID_IN_BOTH_APPROVE_AND_DECLINE");
-        }
+        Set<Long> declineSet = declineMap.keySet();
 
         Set<Long> reservationRoomIds = reservation.getReservationRooms().stream()
                 .map(ReservationRoom::getRoomId)
                 .collect(Collectors.toSet());
 
-        Set<Long> requested = new HashSet<>();
-        requested.addAll(approveSet);
+        Set<Long> requested = new HashSet<>(approveSet);
         requested.addAll(declineSet);
 
         if (!reservationRoomIds.containsAll(requested)) {
@@ -161,12 +160,10 @@ public class ReservationServiceImpl implements ReservationService {
             if (approveSet.contains(roomId)) {
                 changeStatus(rr, ReservationStatus.APPROVED);
                 enqueueRoomStatusChangedEvent(reservationId, roomId, ReservationStatus.APPROVED);
+
             } else if (declineMap.containsKey(roomId)) {
                 changeStatus(rr, ReservationStatus.DECLINED);
-
-                String comment = declineMap.get(roomId);
-                rr.setReviewComment(comment);
-
+                rr.setReviewComment(declineMap.get(roomId));
                 enqueueRoomStatusChangedEvent(reservationId, roomId, ReservationStatus.DECLINED);
             }
         }
