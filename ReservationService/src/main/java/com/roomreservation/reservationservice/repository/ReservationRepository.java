@@ -16,7 +16,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                     FROM reservation r
                     JOIN reservation_room rr ON rr.reservation_id = r.id
                     WHERE rr.room_id IN (:roomIds)
-                      AND r.reservation_status IN ('PENDING','APPROVED')
+                      AND rr.reservation_status IN ('PENDING','APPROVED')
                       AND r.start_time < :endTime
                       AND r.end_time > :startTime
                 )
@@ -33,7 +33,7 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
                   FROM reservation r
                   JOIN reservation_room rr ON rr.reservation_id = r.id
                   WHERE rr.room_id = :roomId
-                    AND r.reservation_status IN ('PENDING','APPROVED')
+                    AND rr.reservation_status IN ('PENDING','APPROVED')
                     AND r.end_time > CURRENT_TIMESTAMP
                 )
             """, nativeQuery = true)

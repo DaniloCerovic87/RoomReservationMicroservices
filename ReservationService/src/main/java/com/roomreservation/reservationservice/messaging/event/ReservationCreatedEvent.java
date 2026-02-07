@@ -9,7 +9,6 @@ public record ReservationCreatedEvent(
         EmployeeSnapshot employee,
         String reservationName,
         String reservationType,
-        String status,
         LocalDateTime startTime,
         LocalDateTime endTime,
         LocalDateTime occurredAt,
@@ -20,7 +19,7 @@ public record ReservationCreatedEvent(
     public record EmployeeSnapshot(Long employeeId, String fullName) {
     }
 
-    public record RoomSnapshot(Long roomId, String name) {
+    public record RoomSnapshot(Long roomId, String name, String status) {
     }
 
 }

@@ -2,7 +2,7 @@ package com.roomreservation.calendarservice.service.impl;
 
 import com.roomreservation.calendarservice.dto.CalendarEntryDto;
 import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
-import com.roomreservation.calendarservice.event.ReservationStatusChangedEvent;
+import com.roomreservation.calendarservice.event.ReservationRoomStatusChangedEvent;
 import com.roomreservation.calendarservice.model.CalendarEntry;
 import com.roomreservation.calendarservice.model.EmployeeSummary;
 import com.roomreservation.calendarservice.model.RoomSummary;
@@ -26,34 +26,32 @@ public class CalendarEntryServiceImpl implements CalendarEntryService {
     @Transactional
     public void applyReservationCreated(ReservationCreatedEvent event) {
         for (var room : event.rooms()) {
-            for (int i = 0; i < 3; i++) {
-                String entryKey = buildEntryId(event.reservationId(), room.roomId());
+            String entryKey = buildEntryId(event.reservationId(), room.roomId());
 
-                CalendarEntry entry = new CalendarEntry();
-                entry.setId(entryKey);
-                entry.setReservationId(event.reservationId());
+            CalendarEntry entry = new CalendarEntry();
+            entry.setId(entryKey);
+            entry.setReservationId(event.reservationId());
 
-                entry.setEmployee(EmployeeSummary.builder()
-                        .id(event.employee().employeeId())
-                        .fullName(event.employee().fullName())
-                        .build());
+            entry.setEmployee(EmployeeSummary.builder()
+                    .id(event.employee().employeeId())
+                    .fullName(event.employee().fullName())
+                    .build());
 
-                entry.setRoom(RoomSummary.builder()
-                        .id(room.roomId())
-                        .name(room.name())
-                        .build());
+            entry.setRoom(RoomSummary.builder()
+                    .id(room.roomId())
+                    .name(room.name())
+                    .build());
 
-                entry.setReservationName(event.reservationName());
-                entry.setReservationType(event.reservationType());
-                entry.setStatus(event.status());
+            entry.setReservationName(event.reservationName());
+            entry.setReservationType(event.reservationType());
+            entry.setStatus(room.status());
 
-                entry.setStartTime(event.startTime());
-                entry.setEndTime(event.endTime());
+            entry.setStartTime(event.startTime());
+            entry.setEndTime(event.endTime());
 
-                entry.setOccurredAt(event.occurredAt());
+            entry.setOccurredAt(event.occurredAt());
 
-                repo.save(entry);
-            }
+            repo.save(entry);
         }
     }
 
@@ -82,14 +80,13 @@ public class CalendarEntryServiceImpl implements CalendarEntryService {
 
     @Override
     @Transactional
-    public void applyReservationStatusChanged(ReservationStatusChangedEvent event) {
-        List<CalendarEntry> entries = repo.findAllByReservationId(event.reservationId());
+    public void applyReservationRoomStatusChanged(ReservationRoomStatusChangedEvent event) {
+        //to be changed to ResourceNotFoundException
+        CalendarEntry entry = repo.findByReservationIdAndRoomId(event.reservationId(), event.roomId())
+                .orElseThrow(() -> new RuntimeException("CALENDAR_ENTRY_NOT_FOUND"));
 
-        for (CalendarEntry e : entries) {
-            e.setStatus(event.newStatus());
-        }
-
-        repo.saveAll(entries);
+        entry.setStatus(event.newStatus());
+        repo.save(entry);
     }
 
     private String buildEntryId(long reservationId, long roomId) {

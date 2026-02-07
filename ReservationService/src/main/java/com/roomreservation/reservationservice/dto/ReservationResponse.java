@@ -7,7 +7,6 @@ import java.util.List;
 
 public record ReservationResponse(
         Long id,
-        String reservationStatus,
         String reservationName,
         String reservationType,
         LocalDateTime startTime,
@@ -24,7 +23,6 @@ public record ReservationResponse(
     ) {
         return new ReservationResponse(
                 reservation.getId(),
-                reservation.getReservationStatus().name(),
                 reservation.getReservationName(),
                 reservation.getReservationType().name(),
                 reservation.getStartTime(),

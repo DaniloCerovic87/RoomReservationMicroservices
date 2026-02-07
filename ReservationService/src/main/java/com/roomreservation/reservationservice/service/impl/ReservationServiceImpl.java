@@ -7,10 +7,11 @@ import com.roomreservation.reservationservice.client.RoomGrpcClient;
 import com.roomreservation.reservationservice.dto.BusyRoomsRequest;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
+import com.roomreservation.reservationservice.dto.ReviewReservationRequest;
 import com.roomreservation.reservationservice.exception.ResourceNotFoundException;
 import com.roomreservation.reservationservice.exception.ValidationException;
 import com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent;
-import com.roomreservation.reservationservice.messaging.event.ReservationStatusChangedEvent;
+import com.roomreservation.reservationservice.messaging.event.ReservationRoomStatusChangedEvent;
 import com.roomreservation.reservationservice.messaging.outbox.OutboxEventEnqueuer;
 import com.roomreservation.reservationservice.model.Reservation;
 import com.roomreservation.reservationservice.model.ReservationRoom;
@@ -26,7 +27,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -76,13 +78,13 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setReservationType(ReservationType.fromValue(request.reservationType()));
         reservation.setStartTime(request.startTime());
         reservation.setEndTime(request.endTime());
-        reservation.setReservationStatus(ReservationStatus.PENDING);
         Reservation saved = reservationRepository.save(reservation);
 
         List<ReservationRoom> links = request.roomIds().stream().map(roomId -> {
             ReservationRoom rr = new ReservationRoom();
             rr.setReservation(saved);
             rr.setRoomId(roomId);
+            rr.setReservationStatus(ReservationStatus.PENDING);
             return rr;
         }).toList();
 
@@ -93,13 +95,12 @@ public class ReservationServiceImpl implements ReservationService {
 
     private void enqueueCreatedEvent(Reservation reservation, GetEmployeeSummaryResponse empResp, List<RoomSummary> roomSummaries) {
         List<ReservationCreatedEvent.RoomSnapshot> roomSnapshots = roomSummaries.stream()
-                .map(r -> new ReservationCreatedEvent.RoomSnapshot(r.getRoomId(), r.getName())).toList();
+                .map(r -> new ReservationCreatedEvent.RoomSnapshot(r.getRoomId(), r.getName(), ReservationStatus.PENDING.getValue())).toList();
 
         ReservationCreatedEvent createdEvent = new ReservationCreatedEvent(reservation.getId(),
                 new ReservationCreatedEvent.EmployeeSnapshot(empResp.getEmployeeId(), empResp.getFullName()),
                 reservation.getReservationName(),
                 reservation.getReservationType().getValue(),
-                reservation.getReservationStatus().getValue(),
                 reservation.getStartTime(),
                 reservation.getEndTime(),
                 LocalDateTime.now(),
@@ -121,41 +122,77 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     @Transactional
-    public void approveReservation(Long id) {
-        Reservation reservation = reservationRepository.findById(id)
+    public void reviewReservationRooms(Long reservationId, ReviewReservationRequest request) {
+
+        Reservation reservation = reservationRepository.findById(reservationId)
                 .orElseThrow(() -> new ResourceNotFoundException("RESERVATION_NOT_FOUND"));
-        changeStatus(reservation, ReservationStatus.APPROVED);
-        enqueueStatusChangedEvent(reservation.getId(), ReservationStatus.APPROVED);
+
+        Set<Long> approveSet = new HashSet<>(request.approveRoomIds());
+
+        Map<Long, String> declineMap = new HashMap<>();
+        for (var d : request.declineRooms()) {
+            if (declineMap.putIfAbsent(d.roomId(), d.comment().trim()) != null) {
+                throw new ValidationException("DUPLICATE_ROOM_ID_IN_DECLINE_LIST");
+            }
+        }
+        Set<Long> declineSet = declineMap.keySet();
+
+        Set<Long> intersection = new HashSet<>(approveSet);
+        intersection.retainAll(declineSet);
+        if (!intersection.isEmpty()) {
+            throw new ValidationException("ROOM_ID_IN_BOTH_APPROVE_AND_DECLINE");
+        }
+
+        Set<Long> reservationRoomIds = reservation.getReservationRooms().stream()
+                .map(ReservationRoom::getRoomId)
+                .collect(Collectors.toSet());
+
+        Set<Long> requested = new HashSet<>();
+        requested.addAll(approveSet);
+        requested.addAll(declineSet);
+
+        if (!reservationRoomIds.containsAll(requested)) {
+            throw new ValidationException("ROOM_NOT_PART_OF_RESERVATION");
+        }
+
+        for (ReservationRoom rr : reservation.getReservationRooms()) {
+            Long roomId = rr.getRoomId();
+
+            if (approveSet.contains(roomId)) {
+                changeStatus(rr, ReservationStatus.APPROVED);
+                enqueueRoomStatusChangedEvent(reservationId, roomId, ReservationStatus.APPROVED);
+            } else if (declineMap.containsKey(roomId)) {
+                changeStatus(rr, ReservationStatus.DECLINED);
+
+                String comment = declineMap.get(roomId);
+                rr.setReviewComment(comment);
+
+                enqueueRoomStatusChangedEvent(reservationId, roomId, ReservationStatus.DECLINED);
+            }
+        }
+
         reservationRepository.save(reservation);
     }
 
-    @Override
-    @Transactional
-    public void declineReservation(Long id) {
-        Reservation reservation = reservationRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("RESERVATION_NOT_FOUND"));
-        changeStatus(reservation, ReservationStatus.DECLINED);
-        enqueueStatusChangedEvent(reservation.getId(), ReservationStatus.DECLINED);
-        reservationRepository.save(reservation);
-    }
 
-    private void changeStatus(Reservation reservation, ReservationStatus target) {
-        ReservationStatus current = reservation.getReservationStatus();
+    private void changeStatus(ReservationRoom reservationRoom, ReservationStatus target) {
+        ReservationStatus current = reservationRoom.getReservationStatus();
         validateTransition(current, target);
-        reservation.setReservationStatus(target);
+        reservationRoom.setReservationStatus(target);
     }
 
-    private void enqueueStatusChangedEvent(Long reservationId, ReservationStatus newStatus) {
-        ReservationStatusChangedEvent evt = new ReservationStatusChangedEvent(
+    private void enqueueRoomStatusChangedEvent(Long reservationId, Long roomId, ReservationStatus newStatus) {
+        ReservationRoomStatusChangedEvent evt = new ReservationRoomStatusChangedEvent(
                 reservationId,
+                roomId,
                 newStatus.getValue(),
                 LocalDateTime.now()
         );
 
         outboxEventEnqueuer.enqueueReservationEvent(
                 reservationId,
-                "ReservationStatusChangedEvent",
-                "reservation-status-changed",
+                "ReservationRoomStatusChangedEvent",
+                "reservation-room-status-changed",
                 evt
         );
     }

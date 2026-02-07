@@ -1,6 +1,5 @@
 package com.roomreservation.reservationservice.model.enums;
 
-import com.roomreservation.reservationservice.exception.ValidationException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

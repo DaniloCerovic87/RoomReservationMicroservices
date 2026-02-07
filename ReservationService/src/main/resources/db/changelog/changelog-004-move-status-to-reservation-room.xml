@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="004-status-per-room" author="danilo.cerovic">
+        <sql>
+            ALTER TABLE reservation
+            DROP
+            COLUMN IF EXISTS reservation_status;
+
+            ALTER TABLE reservation_room
+                ADD COLUMN reservation_status VARCHAR(20) NOT NULL;
+
+            ALTER TABLE reservation_room
+                ADD COLUMN review_comment VARCHAR(500);
+        </sql>
+    </changeSet>
+
+
+</databaseChangeLog>

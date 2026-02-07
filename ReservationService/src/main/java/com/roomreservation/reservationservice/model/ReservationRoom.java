@@ -1,5 +1,6 @@
 package com.roomreservation.reservationservice.model;
 
+import com.roomreservation.reservationservice.model.enums.ReservationStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,13 @@ public class ReservationRoom {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reservation_id", nullable = false)
     private Reservation reservation;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private ReservationStatus reservationStatus;
+
+    @Column(name = "review_comment", length = 500)
+    private String reviewComment;
 
     private Long roomId;
 

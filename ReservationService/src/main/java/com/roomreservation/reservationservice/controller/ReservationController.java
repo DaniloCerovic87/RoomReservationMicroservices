@@ -3,6 +3,7 @@ package com.roomreservation.reservationservice.controller;
 import com.roomreservation.reservationservice.dto.BusyRoomsRequest;
 import com.roomreservation.reservationservice.dto.ReservationRequest;
 import com.roomreservation.reservationservice.dto.ReservationResponse;
+import com.roomreservation.reservationservice.dto.ReviewReservationRequest;
 import com.roomreservation.reservationservice.service.ReservationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,15 +26,12 @@ public class ReservationController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdReservation);
     }
 
-    @PatchMapping("/{id}/approve")
-    public ResponseEntity<Void> approve(@PathVariable Long id) {
-        reservationService.approveReservation(id);
-        return ResponseEntity.ok().build();
-    }
-
-    @PatchMapping("/{id}/decline")
-    public ResponseEntity<Void> decline(@PathVariable Long id) {
-        reservationService.declineReservation(id);
+    @PostMapping("/{reservationId}/review")
+    public ResponseEntity<Void> reviewReservation(
+            @PathVariable Long reservationId,
+            @Valid @RequestBody ReviewReservationRequest request
+    ) {
+        reservationService.reviewReservationRooms(reservationId, request);
         return ResponseEntity.ok().build();
     }
 

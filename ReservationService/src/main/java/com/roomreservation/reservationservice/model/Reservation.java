@@ -1,6 +1,5 @@
 package com.roomreservation.reservationservice.model;
 
-import com.roomreservation.reservationservice.model.enums.ReservationStatus;
 import com.roomreservation.reservationservice.model.enums.ReservationType;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -9,6 +8,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
@@ -34,13 +34,13 @@ public class Reservation {
     @Column(nullable = false)
     private LocalDateTime endTime;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private ReservationStatus reservationStatus;
-
     @Column(nullable = false, length = 150)
     private String reservationName;
 
     @CreatedDate
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy="reservation", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<ReservationRoom> reservationRooms;
+
 }

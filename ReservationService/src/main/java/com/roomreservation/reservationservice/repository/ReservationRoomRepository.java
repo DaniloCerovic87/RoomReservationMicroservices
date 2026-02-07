@@ -14,7 +14,7 @@ public interface ReservationRoomRepository extends JpaRepository<ReservationRoom
               from ReservationRoom rr
               where rr.reservation.startTime < :endTime
                 and rr.reservation.endTime > :startTime
-                and rr.reservation.reservationStatus in (
+                and rr.reservationStatus in (
                   com.roomreservation.reservationservice.model.enums.ReservationStatus.PENDING,
                   com.roomreservation.reservationservice.model.enums.ReservationStatus.APPROVED
                 )

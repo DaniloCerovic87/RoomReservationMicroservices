@@ -2,7 +2,7 @@ package com.roomreservation.reservationservice.messaging.outbox;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent;
-import com.roomreservation.reservationservice.messaging.event.ReservationStatusChangedEvent;
+import com.roomreservation.reservationservice.messaging.event.ReservationRoomStatusChangedEvent;
 import com.roomreservation.reservationservice.repository.OutboxEventRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,8 +65,8 @@ public class OutboxPublisher {
                 Object evt = switch (e.getEventType()) {
                     case "ReservationCreatedEvent" ->
                             outboxPayloadMapper.fromJson(e.getPayload(), ReservationCreatedEvent.class);
-                    case "ReservationStatusChangedEvent" ->
-                            outboxPayloadMapper.fromJson(e.getPayload(), ReservationStatusChangedEvent.class);
+                    case "ReservationRoomStatusChangedEvent" ->
+                            outboxPayloadMapper.fromJson(e.getPayload(), ReservationRoomStatusChangedEvent.class);
                     default -> throw new IllegalStateException("Unknown eventType=" + e.getEventType());
                 };
 
