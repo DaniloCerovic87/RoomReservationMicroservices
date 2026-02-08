@@ -1,5 +1,6 @@
 package com.roomreservation.calendarservice.exception.handler;
 
+import com.roomreservation.calendarservice.exception.ResourceNotFoundException;
 import com.roomreservation.calendarservice.exception.response.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -29,6 +30,18 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiError> handleNotFound(ResourceNotFoundException ex, HttpServletRequest req) {
+        log.warn("Not found: {} | {}", requestSummary(req), ex.getMessage());
+
+        ApiError body = ApiError.builder()
+                .status(HttpStatus.NOT_FOUND.value())
+                .code(ex.getMessage() != null ? ex.getMessage() : "NOT_FOUND")
+                .build();
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
     }
 
     @ExceptionHandler(Exception.class)

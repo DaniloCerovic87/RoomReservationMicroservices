@@ -3,6 +3,7 @@ package com.roomreservation.calendarservice.service.impl;
 import com.roomreservation.calendarservice.dto.CalendarEntryDto;
 import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
 import com.roomreservation.calendarservice.event.ReservationRoomStatusChangedEvent;
+import com.roomreservation.calendarservice.exception.ResourceNotFoundException;
 import com.roomreservation.calendarservice.model.CalendarEntry;
 import com.roomreservation.calendarservice.model.EmployeeSummary;
 import com.roomreservation.calendarservice.model.RoomSummary;
@@ -81,9 +82,8 @@ public class CalendarEntryServiceImpl implements CalendarEntryService {
     @Override
     @Transactional
     public void applyReservationRoomStatusChanged(ReservationRoomStatusChangedEvent event) {
-        //to be changed to ResourceNotFoundException
         CalendarEntry entry = repo.findByReservationIdAndRoomId(event.reservationId(), event.roomId())
-                .orElseThrow(() -> new RuntimeException("CALENDAR_ENTRY_NOT_FOUND"));
+                .orElseThrow(() -> new ResourceNotFoundException("CALENDAR_ENTRY_NOT_FOUND"));
 
         entry.setStatus(event.newStatus());
         repo.save(entry);

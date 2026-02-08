@@ -13,7 +13,7 @@ public class DistinctApproveRoomIdsRule implements ReservationRule<ReviewReserva
     public void validate(ReviewReservationRequest request, List<String> errors) {
         var approve = request.approveRoomIds();
         if (approve == null || approve.isEmpty()) {
-            return; // ok: approve može da bude prazno
+            return;
         }
 
         Set<Long> unique = new HashSet<>(approve);
