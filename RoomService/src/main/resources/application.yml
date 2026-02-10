@@ -33,5 +33,10 @@ spring:
 jwt:
   secret: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
 
-
+springdoc:
+  default-flat-param-object: true
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
 
