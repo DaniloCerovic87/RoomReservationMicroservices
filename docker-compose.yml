@@ -1,10 +1,328 @@
 services:
 
+  # ----------------------------------
+  # Postgres (AuthenticationService DB)
+  # ----------------------------------
+  auth-db:
+    image: postgres:16
+    container_name: auth-db
+    environment:
+      POSTGRES_DB: auth_service
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - auth-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U auth_user -d auth_service" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - fon-net
+
+  # -------------------------
+  # AuthenticationService
+  # -------------------------
+  auth-service:
+    container_name: auth-service
+    build:
+      context: .
+      dockerfile: AuthenticationService/Dockerfile
+    depends_on:
+      auth-db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8081"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://auth-db:5432/auth_service"
+      SPRING_DATASOURCE_USERNAME: "auth_user"
+      SPRING_DATASOURCE_PASSWORD: "auth_pass"
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "broker:9093"
+      SPRING_KAFKA_TEMPLATE_DEFAULT_TOPIC: "user-invited"
+      JWT_SECRET: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
+      JWT_EXPIRATION_MINUTES: "10"
+    ports:
+      - "8081:8081"
+    networks:
+      - fon-net
+
+  # -------------------------
+  # Postgres (RoomService DB)
+  # -------------------------
+  room-db:
+    image: postgres:16
+    container_name: room-db
+    environment:
+      POSTGRES_DB: room_service
+      POSTGRES_USER: room_user
+      POSTGRES_PASSWORD: room_pass
+    ports:
+      - "5434:5432"
+    volumes:
+      - room-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U room_user -d room_service"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - fon-net
+
+  # -------------------------
+  # RoomService
+  # -------------------------
+  room-service:
+    container_name: room-service
+    build:
+      context: .
+      dockerfile: RoomService/Dockerfile
+    depends_on:
+      room-db:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "8083"
+
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://room-db:5432/room_service"
+      SPRING_DATASOURCE_USERNAME: "room_user"
+      SPRING_DATASOURCE_PASSWORD: "room_pass"
+
+      GRPC_SERVER_PORT: "7072"
+
+      GRPC_CLIENT_RESERVATIONSERVICE_ADDRESS: "static://reservation-service:7073"
+      GRPC_CLIENT_RESERVATIONSERVICE_NEGOTIATIONTYPE: "plaintext"
+
+      JWT_SECRET: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
+
+    ports:
+      - "8083:8083"
+      - "7072:7072"
+    networks:
+      - fon-net
+
+  # --------------------------------
+  # Postgres (EmployeeService DB)
+  # --------------------------------
+  employee-db:
+    image: postgres:16
+    container_name: employee-db
+    environment:
+      POSTGRES_DB: employee_service
+      POSTGRES_USER: employee_user
+      POSTGRES_PASSWORD: employee_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - employee-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U employee_user -d employee_service" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - fon-net
+
+  # -------------------------
+  # EmployeeService
+  # -------------------------
+  employee-service:
+    container_name: employee-service
+    build:
+      context: .
+      dockerfile: EmployeeService/Dockerfile
+    depends_on:
+      employee-db:
+        condition: service_healthy
+    environment:
+      SERVER_PORT: "8082"
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://employee-db:5432/employee_service"
+      SPRING_DATASOURCE_USERNAME: "employee_user"
+      SPRING_DATASOURCE_PASSWORD: "employee_pass"
+      GRPC_SERVER_PORT: "7071"
+      JWT_SECRET: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
+      AUTH_SERVICE_URL: "http://auth-service:8081"
+      AUTH_SERVICE_RETRY_MAX_ATTEMPTS: "3"
+      AUTH_SERVICE_RETRY_INITIAL_BACKOFF_MS: "200"
+    ports:
+      - "8082:8082"
+      - "7071:7071"
+    networks:
+      - fon-net
+
+  # --------------------------------
+  # Postgres (ReservationService DB)
+  # --------------------------------
+  reservation-db:
+    image: postgres:16
+    container_name: reservation-db
+    environment:
+      POSTGRES_DB: reservation_service
+      POSTGRES_USER: reservation_user
+      POSTGRES_PASSWORD: reservation_pass
+    ports:
+      - "5435:5432"
+    volumes:
+      - reservation-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U reservation_user -d reservation_service" ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - fon-net
+
+  # -------------------------
+  # ReservationService
+  # -------------------------
+  reservation-service:
+    container_name: reservation-service
+    build:
+      context: .
+      dockerfile: ReservationService/Dockerfile
+    depends_on:
+      reservation-db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8080"
+
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://reservation-db:5432/reservation_service"
+      SPRING_DATASOURCE_USERNAME: "reservation_user"
+      SPRING_DATASOURCE_PASSWORD: "reservation_pass"
+
+      GRPC_SERVER_PORT: "7073"
+
+      GRPC_CLIENT_EMPLOYEESERVICE_ADDRESS: "static://employee-service:7071"
+      GRPC_CLIENT_EMPLOYEESERVICE_NEGOTIATIONTYPE: "plaintext"
+
+      GRPC_CLIENT_ROOMSERVICE_ADDRESS: "static://room-service:7072"
+      GRPC_CLIENT_ROOMSERVICE_NEGOTIATIONTYPE: "plaintext"
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "broker:9093"
+      SPRING_KAFKA_TEMPLATE_DEFAULT_TOPIC: "reservation-created"
+
+      JWT_SECRET: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
+    ports:
+      - "8080:8080"
+      - "7073:7073"
+    networks:
+      - fon-net
+
+  # --------------------------------
+  # MongoDB (CalendarService DB)
+  # --------------------------------
+  mongodb:
+    image: mongo:7.0.5
+    container_name: calendar_mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: calendar_mongodb
+    volumes:
+      - calendar_mongo_data:/data/db
+    healthcheck:
+      test: [ "CMD", "mongosh", "--quiet", "--eval", "db.runCommand({ ping: 1 })" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - fon-net
+
+  # ------------------------------------
+  # MongoExpress (CalendarService DB UI)
+  # ------------------------------------
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: calendar_mongo_express
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    ports:
+      - "8086:8081"
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://root:password@mongodb:27017/?authSource=admin
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+    restart: always
+    networks:
+      - fon-net
+
+  # -------------------------
+  # CalendarService
+  # -------------------------
+  calendar-service:
+    container_name: calendar-service
+    build:
+      context: .
+      dockerfile: CalendarService/Dockerfile
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8085"
+
+      SPRING_DATA_MONGODB_URI: "mongodb://root:password@mongodb:27017/calendar_mongodb?authSource=admin"
+      SPRING_DATA_MONGODB_AUTO_INDEX_CREATION: "false"
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "broker:9093"
+      SPRING_KAFKA_CONSUMER_GROUP_ID: "calendar-service"
+      SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: "org.apache.kafka.common.serialization.StringDeserializer"
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: "org.springframework.kafka.support.serializer.JsonDeserializer"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TYPE_MAPPING: "com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent:com.roomreservation.calendarservice.event.ReservationCreatedEvent,com.roomreservation.reservationservice.messaging.event.ReservationRoomStatusChangedEvent:com.roomreservation.calendarservice.event.ReservationRoomStatusChangedEvent"
+    ports:
+      - "8085:8085"
+    networks:
+      - fon-net
+
+  # -------------------------
+  # NotificationService
+  # -------------------------
+  notification-service:
+    container_name: notification-service
+    build:
+      context: .
+      dockerfile: NotificationService/Dockerfile
+    depends_on:
+      broker:
+        condition: service_started
+    environment:
+      SERVER_PORT: "8084"
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: "broker:9093"
+      SPRING_KAFKA_CONSUMER_GROUP_ID: "notification-service"
+      SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: "org.apache.kafka.common.serialization.StringDeserializer"
+      SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: "org.springframework.kafka.support.serializer.JsonDeserializer"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TRUSTED_PACKAGES: "*"
+      SPRING_KAFKA_CONSUMER_PROPERTIES_SPRING_JSON_TYPE_MAPPING: "com.roomreservation.authenticationservice.messaging.event.UserInvitedEvent:com.roomreservation.notificationservice.event.UserInvitedEvent"
+
+      APP_KAFKA_TOPICS_USERINVITED: "user-invited"
+
+      SPRING_MAIL_HOST: "sandbox.smtp.mailtrap.io"
+      SPRING_MAIL_PORT: "2525"
+      SPRING_MAIL_USERNAME: "bc6f74d3cd56a6"
+      SPRING_MAIL_PASSWORD: "69de5e76382371"
+    ports:
+      - "8084:8084"
+    networks:
+      - fon-net
+
+  # -------------------------
+  # Kafka broker (KRaft mode)
+  # -------------------------
   broker:
     image: confluentinc/cp-kafka:7.6.1
     container_name: broker
     ports:
-      - "9092:9092"
+      - "9092:9092" # Host access (optional, for local tools)
     environment:
       # KRaft
       KAFKA_NODE_ID: 1
@@ -31,7 +349,12 @@ services:
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
     volumes:
       - kafka_data:/var/lib/kafka/data
+    networks:
+      - fon-net
 
+  # -------------------------
+  # Kafka UI
+  # -------------------------
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui
@@ -43,6 +366,16 @@ services:
       KAFKA_CLUSTERS_0_NAME: local
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: broker:9093
       DYNAMIC_CONFIG_ENABLED: "true"
+    networks:
+      - fon-net
+
+networks:
+  fon-net:
 
 volumes:
+  auth-db-data:
+  room-db-data:
+  employee-db-data:
+  reservation-db-data:
+  calendar_mongo_data:
   kafka_data:
