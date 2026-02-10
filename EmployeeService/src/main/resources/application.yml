@@ -35,4 +35,9 @@ auth-service:
     max-attempts: 3
     initial-backoff-ms: 200
 
-
+springdoc:
+  default-flat-param-object: true
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
