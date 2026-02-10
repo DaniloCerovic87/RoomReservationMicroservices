@@ -42,5 +42,4 @@ public class ReservationController {
         return ResponseEntity.ok(reservationService.findBusyRoomIds(request));
     }
 
-
 }
