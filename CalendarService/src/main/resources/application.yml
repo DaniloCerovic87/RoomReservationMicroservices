@@ -22,6 +22,9 @@ spring:
           com.roomreservation.reservationservice.messaging.event.ReservationCreatedEvent:com.roomreservation.calendarservice.event.ReservationCreatedEvent,
           com.roomreservation.reservationservice.messaging.event.ReservationRoomStatusChangedEvent:com.roomreservation.calendarservice.event.ReservationRoomStatusChangedEvent
 
+jwt:
+  secret: "Qm9zYV9zZWN1cmVfSldUX3NlY3JldF9rZXlfNTY3ODkw"
+
 springdoc:
   default-flat-param-object: true
   api-docs:
