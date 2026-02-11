@@ -28,9 +28,18 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST,
-                                "/api/auth/complete-registration",
-                                "/api/auth/login"
+                                "/api/auth/login",
+                                "/api/auth/complete-registration"
                         ).permitAll()
+                        .requestMatchers(
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/api-docs/**",
+                                "/api-docs",
+                                "/api/auth/complete-registration"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/invite").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/auth/users/disable").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
