@@ -23,6 +23,8 @@ import com.roomreservation.reservationservice.service.ReservationService;
 import com.roomreservation.reservationservice.validation.ReservationValidationStrategy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,6 +55,7 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     @Transactional
     public ReservationResponse createReservation(ReservationRequest request) {
+        boolean isAdmin = hasRoleAdmin();
 
         createReservationStrategy.validate(request);
 
@@ -81,22 +84,36 @@ public class ReservationServiceImpl implements ReservationService {
         reservation.setEndTime(request.endTime());
         Reservation saved = reservationRepository.save(reservation);
 
+        ReservationStatus reservationStatus = getReservationStatus(isAdmin);
+
         List<ReservationRoom> links = request.roomIds().stream().map(roomId -> {
             ReservationRoom rr = new ReservationRoom();
             rr.setReservation(saved);
             rr.setRoomId(roomId);
-            rr.setReservationStatus(ReservationStatus.PENDING);
+            rr.setReservationStatus(reservationStatus);
             return rr;
         }).toList();
 
         reservationRoomRepository.saveAll(links);
-        enqueueCreatedEvent(saved, empResp, roomSummaries);
-        return ReservationResponse.toResponse(saved, request.roomIds(), empResp.getFullName());
+        enqueueCreatedEvent(saved, empResp, roomSummaries, reservationStatus);
+        return ReservationResponse.toResponse(saved, request.roomIds(), empResp.getFullName(), reservationStatus);
     }
 
-    private void enqueueCreatedEvent(Reservation reservation, GetEmployeeSummaryResponse empResp, List<RoomSummary> roomSummaries) {
+    private static ReservationStatus getReservationStatus(boolean isAdmin) {
+        return isAdmin ? ReservationStatus.APPROVED : ReservationStatus.PENDING;
+    }
+
+    private boolean hasRoleAdmin() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            return false;
+        }
+        return auth.getAuthorities().stream().anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    private void enqueueCreatedEvent(Reservation reservation, GetEmployeeSummaryResponse empResp, List<RoomSummary> roomSummaries, ReservationStatus reservationStatus) {
         List<ReservationCreatedEvent.RoomSnapshot> roomSnapshots = roomSummaries.stream()
-                .map(r -> new ReservationCreatedEvent.RoomSnapshot(r.getRoomId(), r.getName(), ReservationStatus.PENDING.getValue())).toList();
+                .map(r -> new ReservationCreatedEvent.RoomSnapshot(r.getRoomId(), r.getName(), reservationStatus.getValue())).toList();
 
         ReservationCreatedEvent createdEvent = new ReservationCreatedEvent(reservation.getId(),
                 new ReservationCreatedEvent.EmployeeSnapshot(empResp.getEmployeeId(), empResp.getFullName()),
