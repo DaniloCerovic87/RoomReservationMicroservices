@@ -76,7 +76,7 @@ On the first application startup, the system automatically inserts predefined de
 ### Administrator Account
 
 - **Username:** `system.administrator`
-- **Password:** `admin123`
+- **Password:** `admin1234`
 - **Role:** ADMIN
 
 ---
@@ -84,7 +84,7 @@ On the first application startup, the system automatically inserts predefined de
 ### Employee Account
 
 - **Username:** `marko.jovanovic`
-- **Password:** `empl123`
+- **Password:** `empl1234`
 - **Role:** USER
 
 ---
