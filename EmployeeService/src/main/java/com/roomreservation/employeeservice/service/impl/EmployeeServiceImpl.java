@@ -54,18 +54,12 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         employeeRepository.save(employee);
 
-        String username = generateUsername(employee);
-
         InviteUserRequest inviteRequest =
-                new InviteUserRequest(employee.getEmail(), username, employee.getId());
+                new InviteUserRequest(employee.getEmail(), request.username(), employee.getId());
 
         authServiceClient.inviteUser(inviteRequest);
 
         return EmployeeResponse.fromEntity(employee);
-    }
-
-    private String generateUsername(Employee employee) {
-        return (employee.getFirstName() + "." + employee.getLastName()).toLowerCase();
     }
 
     @Transactional
