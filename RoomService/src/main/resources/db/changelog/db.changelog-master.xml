@@ -7,4 +7,5 @@
 
     <include file="db/changelog/changelog-001-create-room-table.xml"/>
     <include file="db/changelog/changelog-002-add-deleted-column-to-room.xml"/>
+    <include file="db/changelog/changelog-003-insert-initial-rooms.xml"/>
 </databaseChangeLog>

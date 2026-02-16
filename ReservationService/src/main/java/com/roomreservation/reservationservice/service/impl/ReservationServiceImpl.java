@@ -188,7 +188,6 @@ public class ReservationServiceImpl implements ReservationService {
         reservationRepository.save(reservation);
     }
 
-
     private void changeStatus(ReservationRoom reservationRoom, ReservationStatus target) {
         ReservationStatus current = reservationRoom.getReservationStatus();
         validateTransition(current, target);

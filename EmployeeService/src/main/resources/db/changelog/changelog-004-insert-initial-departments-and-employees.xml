@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="004-insert-initial-departments-and-employees" author="danilo.cerovic">
+        <sql>
+            INSERT INTO department (name, deleted)
+            VALUES ('Computer Science', false),
+                   ('Mathematics', false),
+                   ('Management', false),
+                   ('Psychology', false),
+                   ('Economics', false);
+
+            INSERT INTO employee (first_name, last_name, personal_id, email, title, deleted, academic_rank,
+                                  department_id)
+            VALUES ('System', 'Administrator', '111111111', 'system.administrator@univeristy.com', 'Dr.', false,
+                    'ASSOCIATE_PROFESSOR',
+                    1);
+
+            INSERT INTO employee (first_name, last_name, personal_id, email, title, deleted, academic_rank,
+                                  department_id)
+            VALUES ('Marko', 'Jovanovic', '111111112', 'marko.jovanovic@univeristy.com', 'Dr.', false, 'DOCENT', 2);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>

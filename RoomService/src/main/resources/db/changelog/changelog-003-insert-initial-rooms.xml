@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="002-add-deleted-column-to-room" author="danilo.cerovic">
+        <sql>
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Classroom 1', 'CLASSROOM', 30, null, null, true, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Classroom 2', 'CLASSROOM', 25, null, null, false, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Classroom 3', 'CLASSROOM', 40, null, null, true, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Classroom 4', 'CLASSROOM', 30, null, null, true, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Computer Room 1', 'COMPUTER_ROOM', 30, 30, null, null, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Computer Room 2', 'COMPUTER_ROOM', 40, 30, null, null, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Computer Room 3', 'COMPUTER_ROOM', 25, 25, null, null, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Computer Room 4', 'COMPUTER_ROOM', 20, 20, null, null, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Amphitheater A', 'AMPHITHEATER', 200, null, 2, null, false);
+
+            INSERT INTO room (name, room_type, capacity, number_of_computers, number_of_projectors, has_smart_board,
+                              deleted)
+            VALUES ('Amphitheater B', 'AMPHITHEATER', 300, null, 3, null, false);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
+
+
+

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <changeSet id="003-insert-initial-users" author="danilo.cerovic">
+        <sql>
+            INSERT INTO users (username, email, password_hash, status, role, employee_id, activation_token,
+                               activation_expires_at, created_at)
+            VALUES ('system.administrator', 'system.administrator@university.com',
+                    '$2a$10$Jy/Juq1NjZh7tf89Z2TTLeKJbEsMcGTbbCEh93VjW2U2MRyT3rXV.', 'ACTIVE', 'ADMIN', 1, null, null,
+                    NOW());
+
+            INSERT INTO public.users (id, username, email, password_hash, status, role, employee_id, activation_token,
+                                      activation_expires_at, created_at)
+            VALUES (4, 'marko.jovanovic', 'marko.jovanovic@univeristy.com',
+                    '$2a$10$fBa1F9JRD7FWi0s4yKkzD.nooN3VbPx.ox.UCbpaWAl4V32xS/lO.', 'ACTIVE', 'USER', 2, null, null,
+                    NOW());
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
