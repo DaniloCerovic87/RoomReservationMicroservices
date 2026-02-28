@@ -284,6 +284,28 @@ services:
       - fon-net
 
   # -------------------------
+  # Postgres (NotificationService DB)
+  # -------------------------
+  notification-db:
+    image: postgres:16
+    container_name: notification-db
+    environment:
+      POSTGRES_DB: notification_service
+      POSTGRES_USER: notif_user
+      POSTGRES_PASSWORD: notif_pass
+    ports:
+      - "5436:5432"
+    volumes:
+      - notification-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notif_user -d notification_service"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    networks:
+      - fon-net
+
+  # -------------------------
   # NotificationService
   # -------------------------
   notification-service:
@@ -292,10 +314,16 @@ services:
       context: .
       dockerfile: NotificationService/Dockerfile
     depends_on:
+      notification-db:
+        condition: service_healthy
       broker:
         condition: service_started
     environment:
       SERVER_PORT: "8084"
+
+      SPRING_DATASOURCE_URL: "jdbc:postgresql://notification-db:5432/notification_service"
+      SPRING_DATASOURCE_USERNAME: "notif_user"
+      SPRING_DATASOURCE_PASSWORD: "notif_pass"
 
       SPRING_KAFKA_BOOTSTRAP_SERVERS: "broker:9093"
       SPRING_KAFKA_CONSUMER_GROUP_ID: "notification-service"
@@ -377,5 +405,6 @@ volumes:
   room-db-data:
   employee-db-data:
   reservation-db-data:
+  notification-db-data:
   calendar_mongo_data:
   kafka_data:

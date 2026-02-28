@@ -1,9 +1,12 @@
 package com.roomreservation.notificationservice.service;
 
 import com.roomreservation.notificationservice.event.UserInvitedEvent;
+import com.roomreservation.notificationservice.model.SentInviteEmail;
+import com.roomreservation.notificationservice.repository.SentInviteEmailRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,6 +20,7 @@ import java.time.format.DateTimeFormatter;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final SentInviteEmailRepository sentInviteEmailRepository;
 
     @Value("${spring.mail.username:no-reply@example.com}")
     private String from;
@@ -25,6 +29,13 @@ public class EmailService {
     private String frontendBaseUrl;
 
     public void sendActivationEmail(UserInvitedEvent event) {
+        try {
+            sentInviteEmailRepository.save(SentInviteEmail.builder().userId(event.userId()).build());
+        } catch (DataIntegrityViolationException ex) {
+            log.info("Invite email already processed for userId={}, skipping duplicate event", event.userId());
+            return;
+        }
+
         String activationLink = frontendBaseUrl + "/complete-registration?token=" + event.activationToken();
 
         String expiryText = "";
