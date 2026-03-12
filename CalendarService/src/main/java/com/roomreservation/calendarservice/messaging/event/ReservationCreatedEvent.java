@@ -1,4 +1,4 @@
-package com.roomreservation.calendarservice.event;
+package com.roomreservation.calendarservice.messaging.event;
 
 import java.time.LocalDateTime;
 import java.util.List;

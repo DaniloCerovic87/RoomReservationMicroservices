@@ -32,7 +32,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/users/disable")
+    @PatchMapping("/internal/users/disable")
     public ResponseEntity<Void> disableUser(@Valid @RequestBody DisableUserRequest request) {
         authService.disableUserByEmployeeId(request.employeeId());
         return ResponseEntity.noContent().build();

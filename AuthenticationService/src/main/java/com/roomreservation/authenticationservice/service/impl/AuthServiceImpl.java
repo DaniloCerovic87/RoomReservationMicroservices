@@ -55,6 +55,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserInvitedEvent event = new UserInvitedEvent(
                 user.getId(),
+                user.getEmployeeId(),
                 user.getEmail(),
                 user.getUsername(),
                 user.getActivationToken(),

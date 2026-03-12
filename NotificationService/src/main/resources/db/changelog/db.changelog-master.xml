@@ -5,5 +5,5 @@
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <include file="db/changelog/changelog-001-create-sent-invite-email-table.xml"/>
+    <include file="/db/changelog/changelog-001-create-invite-email-delivery-table.xml"/>
 </databaseChangeLog>

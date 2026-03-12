@@ -1,7 +1,7 @@
-package com.roomreservation.calendarservice.listener;
+package com.roomreservation.calendarservice.messaging.listener;
 
-import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
-import com.roomreservation.calendarservice.event.ReservationRoomStatusChangedEvent;
+import com.roomreservation.calendarservice.messaging.event.ReservationCreatedEvent;
+import com.roomreservation.calendarservice.messaging.event.ReservationRoomStatusChangedEvent;
 import com.roomreservation.calendarservice.service.CalendarEntryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.annotation.KafkaListener;

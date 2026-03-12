@@ -1,8 +1,8 @@
 package com.roomreservation.calendarservice.service.impl;
 
 import com.roomreservation.calendarservice.dto.CalendarEntryDto;
-import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
-import com.roomreservation.calendarservice.event.ReservationRoomStatusChangedEvent;
+import com.roomreservation.calendarservice.messaging.event.ReservationCreatedEvent;
+import com.roomreservation.calendarservice.messaging.event.ReservationRoomStatusChangedEvent;
 import com.roomreservation.calendarservice.exception.ResourceNotFoundException;
 import com.roomreservation.calendarservice.model.CalendarEntry;
 import com.roomreservation.calendarservice.model.EmployeeSummary;

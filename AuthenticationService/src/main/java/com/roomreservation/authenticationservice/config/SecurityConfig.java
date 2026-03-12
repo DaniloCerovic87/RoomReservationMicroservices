@@ -36,10 +36,10 @@ public class SecurityConfig {
                                 "/swagger-ui.html",
                                 "/api-docs/**",
                                 "/api-docs",
-                                "/api/auth/complete-registration"
+                                "/api/auth/complete-registration",
+                                "/api/auth/internal/users/disable"
                         ).permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/invite").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/auth/users/disable").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)

@@ -1,8 +1,8 @@
 package com.roomreservation.calendarservice.service;
 
 import com.roomreservation.calendarservice.dto.CalendarEntryDto;
-import com.roomreservation.calendarservice.event.ReservationCreatedEvent;
-import com.roomreservation.calendarservice.event.ReservationRoomStatusChangedEvent;
+import com.roomreservation.calendarservice.messaging.event.ReservationCreatedEvent;
+import com.roomreservation.calendarservice.messaging.event.ReservationRoomStatusChangedEvent;
 
 import java.time.LocalDate;
 import java.util.List;

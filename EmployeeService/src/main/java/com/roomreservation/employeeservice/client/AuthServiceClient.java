@@ -39,7 +39,7 @@ public class AuthServiceClient {
     public void disableUserByEmployeeId(Long employeeId) {
         executeAuthCall(() ->
                 authRestClient.patch()
-                        .uri("/api/auth/users/disable")
+                        .uri("/api/auth/internal/users/disable")
                         .body(new DisableUserRequest(employeeId))
                         .retrieve()
                         .toBodilessEntity());

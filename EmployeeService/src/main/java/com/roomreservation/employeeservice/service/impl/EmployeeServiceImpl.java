@@ -15,6 +15,7 @@ import com.roomreservation.employeeservice.repository.DepartmentRepository;
 import com.roomreservation.employeeservice.repository.EmployeeRepository;
 import com.roomreservation.employeeservice.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +23,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
@@ -115,7 +117,13 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional
     public void deleteEmployee(Long id) {
         Employee employee = employeeRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee", id));
+                .orElse(null);
+
+        if (employee == null || employee.isDeleted()) {
+            log.info("Skipping invite failure compensation because employee does not exist. employeeId={}", id);
+            return;
+        }
+
         authServiceClient.disableUserByEmployeeId(employee.getId());
         employeeRepository.delete(employee);
     }
