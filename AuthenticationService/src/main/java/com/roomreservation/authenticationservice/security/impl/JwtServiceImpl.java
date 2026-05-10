@@ -37,7 +37,7 @@ public class JwtServiceImpl implements JwtService {
         return Jwts.builder()
                 .claims()
                 .subject(String.valueOf(user.getEmployeeId()))
-                .issuedAt(Date.from(expiry))
+                .issuedAt(Date.from(now))
                 .expiration(Date.from(expiry))
                 .add("role", user.getRole().name())
                 .and()

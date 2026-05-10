@@ -22,11 +22,10 @@ public class JwtTokenProvider {
     public JwtUserPrincipal getPrincipalFromToken(String token) throws JwtException {
         Claims claims = parseClaims(token);
 
-        Long employeeId = null;
-        Object empIdObj = claims.get("sub");
-        if (empIdObj instanceof Number number) {
-            employeeId = number.longValue();
-        }
+        String subject = claims.getSubject();
+        Long employeeId = subject != null && !subject.isBlank()
+                ? Long.parseLong(subject)
+                : null;
 
         String role = claims.get("role", String.class);
 
